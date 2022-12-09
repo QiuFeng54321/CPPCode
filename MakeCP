@@ -1,0 +1,61 @@
+#!/usr/bin/python3
+
+import sys
+from pathlib import Path
+import os
+
+def touch_in_out(loc: str):
+    Path(f"{loc}.in").touch()
+    Path(f"{loc}.out").touch()
+
+def fill_template_content(src: str, name: str) -> str:
+    return src.replace("${ProgramName}", name)
+
+def write_content(loc: str, content: str):
+    file_path = f"{loc}.cpp"
+    if Path(file_path).exists():
+        print("Source already exists.")
+        return
+    with open(file_path, "w") as out:
+        out.write(content)
+
+def usaco(loc: str, name: str):
+    year = f"20{loc[:2]}"
+    time = times[loc[2]]
+    rank = ranks[loc[3]]
+    if name == None: name = loc
+    content = fill_template_content(template_content, name)
+    fileLocation = f"USACO/{year}/{time}/{rank}/{name}"
+    write_content(fileLocation, content)
+    touch_in_out(fileLocation)
+
+def codeforces(loc: str, name: str):
+    contest = loc[:-1]
+    section = loc[-1].upper()
+    if name == None: name = section
+    content = fill_template_content(template_content, name)
+    srcdir = f"CodeForces/{contest}"
+    os.makedirs(srcdir)
+    fileLocation = f"{srcdir}/{section}"
+    write_content(fileLocation, content)
+    touch_in_out(fileLocation)
+
+
+
+times = {"D": "December", "J": "January", "F": "Feburary", "O": "OpenContest"}
+ranks = {"B": "Bronze", "S": "Silver", "G": "Gold", "P": "Platinum"}
+sites = {"UC": usaco, "CF": codeforces, "CS": "CSES", "AT": "AtCoder", "NO": "noi"}
+template_content = open("cp_template/template.cpp", "r").read()
+
+
+args = sys.argv
+if len(args) < 2:
+    print("No arguments given.")
+    print("Usage: <site> <loc> [name] (loc: 19DB = 2019 December Bronze)")
+    exit(-1)
+
+site = sites[args[1].upper()]
+loc = args[2]
+programName = args[3] if len(args) > 3 else None
+
+site(loc, programName)

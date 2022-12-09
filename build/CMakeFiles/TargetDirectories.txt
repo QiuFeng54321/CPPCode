@@ -1,0 +1,4 @@
+/Users/mac/Documents/VSCProjects/CPPCode/build/CMakeFiles/rebuild_cache.dir
+/Users/mac/Documents/VSCProjects/CPPCode/build/CMakeFiles/edit_cache.dir
+/Users/mac/Documents/VSCProjects/CPPCode/build/CMakeFiles/package_source.dir
+/Users/mac/Documents/VSCProjects/CPPCode/build/CMakeFiles/package.dir

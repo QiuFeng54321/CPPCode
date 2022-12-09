@@ -1,0 +1,53 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+struct Vec2D {
+    int x, y;
+};
+
+struct VecRange {
+    Vec2D min, max;
+};
+
+struct Bidirection {
+    int forward, backward;
+};
+
+Vec2D* cows;
+std::vector<int>* links;
+bool* visited;
+int N, M;
+
+VecRange dfs(int to) {
+    visited[to] = true;
+    for(int link : links[to]) {
+        if (!visited[link])
+            dfs(link);
+    }
+}
+
+int main() {
+    std::ifstream fin("fenceplan.in");
+    std::ofstream fout("fenceplan.out");
+    fin >> N >> M;
+    cows = new Vec2D[N];
+    links = new std::vector<int>[N];
+    visited = new bool[N];
+    for (int i = 0; i < N; i ++) {
+        cows[i] = Vec2D();
+        links[i] = std::vector<int>();
+        fin >> cows[i].x >> cows[i].y;
+    }
+    for (int i = 0; i < M; i++) {
+        int cow, forward;
+        fin >> cow >> forward;
+        links[cow].push_back(forward);
+        links[forward].push_back(cow);
+    }
+    for (int i = 0; i < N; i ++) {
+        if (!visited[i])
+            dfs(i);
+    }
+    fout << "Hi";
+}

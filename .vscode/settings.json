@@ -78,7 +78,8 @@
         "iomanip": "cpp",
         "ios": "cpp",
         "mutex": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "filesystem": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/misc"
 }

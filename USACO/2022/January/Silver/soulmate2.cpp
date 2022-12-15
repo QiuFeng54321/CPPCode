@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: soulmate2
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "soulmate2"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,7 +18,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #pragma region States
 #define DEBUG 0
@@ -57,18 +57,14 @@ LANG: C++
 #define dbgs if (DEBUG)
 #define f first
 #define s second
-#define car const auto&
-#define ctr(t) const t&
-#define var auto
-#define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define F0R(i, n) for (int i = 0; i < n; i++)
+#define F0Ri(i, n) for (int i = 0; i <= n; i++)
+#define F1R(i, n) for (int i = 1; i < n; i++)
+#define F1Ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -85,7 +81,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -128,9 +124,23 @@ struct DSU {
 #endif
 #pragma endregion
 
-void solve() {
-    
+int n;
+ll a, b;
+ll steps;
+
+void f() {
+    if (a == b) return;
+    while (a > b) {
+        if (a & 1) {
+            a++;
+            steps++;
+        }
+        a >>= 1;
+        steps++;
+    }
 }
+
+void solve() {}
 
 int main() {
     MAIN_FILE_HEADER

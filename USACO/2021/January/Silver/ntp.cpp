@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: ntp
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "ntp"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,7 +18,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #pragma region States
 #define DEBUG 0
@@ -57,18 +57,14 @@ LANG: C++
 #define dbgs if (DEBUG)
 #define f first
 #define s second
-#define car const auto&
-#define ctr(t) const t&
-#define var auto
-#define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define F0R(i, n) for (int i = 0; i < n; i++)
+#define F0Ri(i, n) for (int i = 0; i <= n; i++)
+#define F1R(i, n) for (int i = 1; i < n; i++)
+#define F1Ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -85,7 +81,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -128,11 +124,44 @@ struct DSU {
 #endif
 #pragma endregion
 
-void solve() {
-    
+const int N = 100000;
+int pre[N], suf[N];
+int n, q;
+int c[N];
+
+void solve(int* ptr) {
+    stack<int> st;
+    F0R(i, n) {
+        if (i != 0) ptr[i] = ptr[i - 1];
+        while (!st.empty() && st.top() > c[i]) st.pop();
+        if (st.empty() || st.top() < c[i]) {
+            ptr[i]++;
+            st.push(c[i]);
+        }
+        dbg(ptr[i] << ' ')
+    }
+    dbg('\n');
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> n >> q;
+    F0R(i, n) {
+        char ch;
+        cin >> ch;
+        c[i] = ch - 'A';
+    }
+    solve(pre);
+    reverse(c, c + n);
+    solve(suf);
+    F0R(i, q) {
+        int a, b;
+        cin >> a >> b;
+        a--;
+        b--;
+        cout << ((a == 0 ? 0 : pre[a - 1]) +
+                 (n - b - 1 == 0 ? 0 : suf[n - b - 2]))
+             << endl;
+    }
     return 0;
 }

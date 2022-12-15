@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: moobuzz
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "moobuzz"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -21,7 +21,7 @@ LANG: C++
 
 #pragma region States
 #define DEBUG 0
-#define USE_FILE 0
+#define USE_FILE 1
 #define PARALLEL 1
 #define MOD 1000000007
 #define USE_DSU 0
@@ -57,14 +57,10 @@ LANG: C++
 #define dbgs if (DEBUG)
 #define f first
 #define s second
-#define car const auto&
-#define ctr(t) const t&
-#define var auto
-#define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define F0R(i, n) for(int i = 0; i < n; i++)
+#define F0Ri(i, n) for(int i = 0; i <= n; i++)
+#define F1R(i, n) for(int i = 1; i < n; i++)
+#define F1Ri(i, n) for(int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
@@ -128,11 +124,18 @@ struct DSU {
 #endif
 #pragma endregion
 
-void solve() {
-    
+int a[]{1, 2, 4, 7, 8, 11, 13, 14};
+
+ll solve(ll i) {
+    ll m = i / 8;
+    int r = i % 8;
+    return m * 15 + a[r];
 }
 
 int main() {
     MAIN_FILE_HEADER
+    ll n;
+    cin >> n;
+    cout << solve(n - 1) << endl;
     return 0;
 }

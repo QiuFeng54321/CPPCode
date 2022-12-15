@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: moobuzz
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "moobuzzGen"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -21,7 +21,7 @@ LANG: C++
 
 #pragma region States
 #define DEBUG 0
-#define USE_FILE 0
+#define USE_FILE 1
 #define PARALLEL 1
 #define MOD 1000000007
 #define USE_DSU 0
@@ -57,14 +57,10 @@ LANG: C++
 #define dbgs if (DEBUG)
 #define f first
 #define s second
-#define car const auto&
-#define ctr(t) const t&
-#define var auto
-#define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define F0R(i, n) for(int i = 0; i < n; i++)
+#define F0Ri(i, n) for(int i = 0; i <= n; i++)
+#define F1R(i, n) for(int i = 1; i < n; i++)
+#define F1Ri(i, n) for(int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
@@ -134,5 +130,6 @@ void solve() {
 
 int main() {
     MAIN_FILE_HEADER
+    ll 
     return 0;
 }

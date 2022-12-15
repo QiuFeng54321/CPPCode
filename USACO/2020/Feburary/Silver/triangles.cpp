@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: triangles
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "triangles"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,11 +18,10 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #pragma region States
 #define DEBUG 0
-#define USE_FILE 0
+#define USE_FILE 1
 #define PARALLEL 1
 #define MOD 1000000007
 #define USE_DSU 0
@@ -57,18 +57,14 @@ LANG: C++
 #define dbgs if (DEBUG)
 #define f first
 #define s second
-#define car const auto&
-#define ctr(t) const t&
-#define var auto
-#define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define F0R(i, n) for (int i = 0; i < n; i++)
+#define F0Ri(i, n) for (int i = 0; i <= n; i++)
+#define F1R(i, n) for (int i = 1; i < n; i++)
+#define F1Ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -85,7 +81,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -128,11 +124,68 @@ struct DSU {
 #endif
 #pragma endregion
 
-void solve() {
-    
+const int N = 100000;
+const int R = 20002;
+
+int n;
+ll xsum[R], ysum[R];
+vector<pair<int, int>> coords;
+// {{(x|y), i}, ...}
+vector<pair<int, int>> todo[R];
+// {{xsum, ysum}, ...}
+vector<ll> sum[N];
+
+void calcSum() {
+    F0R(i, R) {
+        if (!todo[i].empty()) {
+            dbg(i << ": ");
+            sort(todo[i].begin(), todo[i].end());
+            ll cur = 0;
+            for (const auto& [z, idx] : todo[i]) {
+                cur = (cur + z - todo[i][0].f) % MOD;
+            }
+            F0R(j, todo[i].size()) {
+                const auto& [z, idx] = todo[i][j];
+                if (j) cur = (cur + (2 * j - todo[i].size()) * (z - todo[i][j - 1].f));
+                // 第一次调用push一次（x），第二次y，所以(x, y)
+                sum[idx].push_back(cur);
+                dbg("(" << z << ", " << cur << ") ");
+            }
+            dbg("\n")
+        }
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> n;
+    coords.resize(n);
+    F0R(i, n) {
+        cin >> coords[i].f >> coords[i].s;
+        coords[i].f += 10000;
+        coords[i].s += 10000;
+    }
+    F0R(i, R) todo[i].clear();
+    F0R(i, n) {
+        const auto& [x, y] = coords[i];
+        todo[x].push_back({y, i});
+    }
+    calcSum();
+    dbgl("Y ---")
+    F0R(i, R) todo[i].clear();
+    F0R(i, n) {
+        const auto& [x, y] = coords[i];
+        todo[y].push_back({x, i});
+    }
+    calcSum();
+    ll ans = 0;
+    F0R(i, n) {
+        dbgs {
+            const auto& [x, y] = coords[i];
+            dbgl(x << ", " << y << ": " << sum[i][0] << ", " << sum[i][1]);
+        }
+        ans = (ans + sum[i][0] * sum[i][1]) % MOD;
+    }
+    cout << ans << endl;
     return 0;
 }

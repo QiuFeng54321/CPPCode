@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: dance_mooves
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "dance_mooves"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,7 +18,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #pragma region States
 #define DEBUG 0
@@ -57,18 +57,14 @@ LANG: C++
 #define dbgs if (DEBUG)
 #define f first
 #define s second
-#define car const auto&
-#define ctr(t) const t&
-#define var auto
-#define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define F0R(i, n) for (int i = 0; i < n; i++)
+#define F0Ri(i, n) for (int i = 0; i <= n; i++)
+#define F1R(i, n) for (int i = 1; i < n; i++)
+#define F1Ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -85,7 +81,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -128,11 +124,71 @@ struct DSU {
 #endif
 #pragma endregion
 
-void solve() {
-    
+const int N = 100000;
+const int K = 200000;
+int n, k;
+int a[K], b[K];
+int cnt[N];
+int idx[N];
+int uniquePos = 0;
+vector<int> paths[N];
+stack<int> path;
+int pathLast[N];
+bool visited[N];
+int ans[N];
+
+void add(int i) {
+    for (const auto& e : paths[i]) {
+        if (cnt[e] == 0) uniquePos++;
+        cnt[e]++;
+    }
+}
+void remove(int i) {
+    for (const auto& e : paths[i]) {
+        cnt[e]--;
+        if (cnt[e] == 0) uniquePos--;
+    }
+}
+int solve(int i) {
+    visited[i] = true;
+    add(i);
+    path.push(i);
+    dbgl(i);
+    if (!visited[pathLast[i]]) {
+        solve(pathLast[i]);
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> n >> k;
+    F0R(i, n) {
+        idx[i] = i;
+        paths[i].push_back(i);
+    }
+    F0R(i, k) {
+        cin >> a[i] >> b[i];
+        a[i]--;
+        b[i]--;
+        paths[idx[a[i]]].push_back(b[i]);
+        paths[idx[b[i]]].push_back(a[i]);
+        swap(idx[a[i]], idx[b[i]]);
+    }
+    F0R(i, n) {
+        pathLast[idx[i]] = i;
+    }
+    F0R(i, n) {
+        if (visited[i]) continue;
+        solve(i);
+        int a = uniquePos;
+        while (!path.empty()) {
+            auto e = path.top(); path.pop();
+            remove(e);
+            ans[e] = a;
+        }
+    }
+    F0R(i, n) {
+        cout << ans[i] << endl;
+    }
     return 0;
 }

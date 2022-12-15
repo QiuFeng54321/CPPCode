@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: meetings
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "meetings"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -21,7 +21,7 @@ LANG: C++
 
 #pragma region States
 #define DEBUG 0
-#define USE_FILE 0
+#define USE_FILE 1
 #define PARALLEL 1
 #define MOD 1000000007
 #define USE_DSU 0
@@ -57,14 +57,10 @@ LANG: C++
 #define dbgs if (DEBUG)
 #define f first
 #define s second
-#define car const auto&
-#define ctr(t) const t&
-#define var auto
-#define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define F0R(i, n) for(int i = 0; i < n; i++)
+#define F0Ri(i, n) for(int i = 0; i <= n; i++)
+#define F1R(i, n) for(int i = 1; i < n; i++)
+#define F1Ri(i, n) for(int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
@@ -128,11 +124,57 @@ struct DSU {
 #endif
 #pragma endregion
 
-void solve() {
-    
+ll wsum;
+ll wreach;
+const int N = 50000;
+int d[N], w[N], x[N];
+ll t[N];
+int n;
+ll L;
+
+
+ll solve() {
+    ll maxTime = 0;
+    int i = 0, j = n - 1;
+    while (wreach < wsum / 2) {
+        if (d[i] == -1) {
+            t[i] += d[i];
+            wreach += w[i];
+            maxTime = max(maxTime, t[i]);
+            i++;
+            if (wreach >= wsum / 2) break;
+        }
+        if (d[j]) {
+            t[j] += d[j];
+            wreach += w[j];
+            maxTime = max(maxTime, t[j]);
+            j--;
+            if (wreach >= wsum / 2) break;
+        }
+        for (int k = i; k <= j; k++) {
+            if (k != j && d[k] && !d[k + 1]) {
+                if (t[k] < t[k + 1]) {
+                    d[k] += t[k + 1] - t[k];
+                }
+                if (t[k + 1] < t[k]) {
+                    t[k + 1] += t[k] - t[k + 1];
+                }
+                
+            }
+        }
+
+    }
+    return time;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> n >> L;
+    F0R(i, n) {
+        cin >> w[i] >> x[i] >> d[i];
+        wsum += w[i];
+    }
+    ll time = solve();
+    cout << time << endl;
     return 0;
 }

@@ -131,14 +131,19 @@ bool visited[N][N];
 int dx[]{0, 1, 0, -1};
 int dy[]{1, 0, -1, 0};
 
+// Simple hash
 int hsh(int x, int y) { return x * N + y; };
 map<int, int> areas;
-map<int, int> to_origin;
+map<int, int> to_origin;  // Every coord [x, y] maps to one point [ox, oy] that
+                          // represents the block
+// Area of two colors
 map<pair<int, int>, int> dareas;
+// Blocks visited by two color region
 map<pair<int, int>, set<int>> visitedPairs;
 int maxArea;
 int maxArea2;
 
+// Find connected blocks and get areas
 void solve(int ox, int oy, int x, int y) {
     visited[x][y] = true;
     to_origin[hsh(x, y)] = hsh(ox, oy);
@@ -154,25 +159,24 @@ void solve(int ox, int oy, int x, int y) {
 }
 void solve2(int x, int y) {
     visited[x][y] = true;
-    auto origin = to_origin[hsh(x, y)];
-    maxArea = max(maxArea, areas[origin]);
-    F0R(di, 4) {
+    auto origin = to_origin[hsh(x, y)];     // Origin hash
+    maxArea = max(maxArea, areas[origin]);  // Find single max area
+    F0R(di, 4) {  // 4 directions. Add adjacent areas to respective dareas w/
+                  // pair(this col, adj col)
         int nx = x + dx[di];
         int ny = y + dy[di];
         if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
         auto norigin = to_origin[hsh(nx, ny)];
         pair<int, int> key = {min(pic[x][y], pic[nx][ny]),
                               max(pic[x][y], pic[nx][ny])};
-        pair<int, int> pairKey = {min(origin, norigin), max(origin, norigin)};
-        if (pic[x][y] != pic[nx][ny]) {
-            if (!visitedPairs[key].count(origin)) {
-                visitedPairs[key].insert(origin);
-                dareas[key] += areas[origin];
-            }
-            if (!visitedPairs[key].count(norigin)) {
-                visitedPairs[key].insert(norigin);
-                dareas[key] += areas[norigin];
-            }
+        // Add adjacent areas
+        if (!visitedPairs[key].count(origin)) {
+            visitedPairs[key].insert(origin);
+            dareas[key] += areas[origin];
+        }
+        if (!visitedPairs[key].count(norigin)) {
+            visitedPairs[key].insert(norigin);
+            dareas[key] += areas[norigin];
         }
     }
     F0R(di, 4) {

@@ -22,17 +22,14 @@ LANG: C++
 #pragma region States
 #define DEBUG 0
 #define USE_FILE 0
-#define PARALLEL 1
 #define MOD 1000000007
 #define USE_DSU 0
 #pragma endregion
 
 #pragma region Definitions
 #if defined(__GNUC__) && !defined(__clang__)
-#if PARALLEL
 #pragma GCC optimize("Ofast")
 #pragma GCC target("avx,avx2,fma")
-#endif
 #endif
 #define FAST_IO                  \
     ios::sync_with_stdio(false); \

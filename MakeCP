@@ -24,7 +24,7 @@ def usaco(loc: str, name: str):
     time = times[loc[2]]
     rank = ranks[loc[3]]
     if name == None: name = loc
-    content = fill_template_content(template_content, name)
+    content = fill_template_content(template_content if int(year) >= 2021 else real_template_content, name)
     fileLocation = f"USACO/{year}/{time}/{rank}/{name}"
     write_content(fileLocation, content)
     touch_in_out(fileLocation)
@@ -46,6 +46,7 @@ times = {"D": "December", "J": "January", "F": "Feburary", "O": "OpenContest"}
 ranks = {"B": "Bronze", "S": "Silver", "G": "Gold", "P": "Platinum"}
 sites = {"UC": usaco, "CF": codeforces, "CS": "CSES", "AT": "AtCoder", "NO": "noi"}
 template_content = open("cp_template/template.cpp", "r").read()
+real_template_content = open("cp_template/usaco_real.cpp", "r").read()
 
 
 args = sys.argv

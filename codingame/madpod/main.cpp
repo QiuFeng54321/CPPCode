@@ -38,25 +38,50 @@ using pll = pair<ll, ll>;
 using pi = pair<int, int>;
 #pragma endregion
 
-struct Point {
-    int x, y;
+struct Vec {
+    double x, y;
     double abs() { return sqrt(x * x + y * y); }
-    double angle() { return atan(y / x); }
-    Point rotate(double rad) {
+    double angle() { return atan2(y, x); }
+    // double angle(Vec base) { return atan2(det(base), dot(base)); }
+    double angle(Vec base) { return angle() - base.angle(); }
+    double dot(Vec b) { return x * b.x + y * b.y; }
+    double det(Vec b) { return x * b.y - y * b.x; }
+    Vec unit() { return operator/(abs()); }
+    Vec rotate(double rad) {
         auto s = sin(rad), c = cos(rad);
-        return {int(x * c - y * s), int(x * s + y * c)};
+        return {x * c - y * s, x * s + y * c};
     }
-    friend ostream& operator<<(ostream& os, ctr(Point) p) {
-        os << p.x << ' ' << p.y;
+    friend ostream& operator<<(ostream& os, ctr(Vec) p) {
+        os << (int)p.x << ' ' << (int)p.y;
         return os;
     }
-    friend istream& operator>>(istream& os, Point& p) {
+    friend istream& operator>>(istream& os, Vec& p) {
         os >> p.x >> p.y;
         return os;
     }
-    Point operator+(Point b) { return {x + b.x, y + b.y}; }
-    Point operator-(Point b) { return {x - b.x, y - b.y}; }
+    Vec operator+(Vec b) { return {x + b.x, y + b.y}; }
+    Vec operator-(Vec b) { return {x - b.x, y - b.y}; }
+    Vec operator*(double s) { return {x * s, y * s}; }
+    Vec operator/(double s) { return {x / s, y / s}; }
 };
+struct PIDParams {
+    double p, i, d;
+};
+class PIDController {
+    PIDParams params;
+    double prevError, integral;
+
+   public:
+    PIDController(PIDParams params) : params(params) {}
+    PIDController(double p, double i, double d) : params({p, i, d}) {}
+    double update(double error, double dt = 1) {
+        var dx = (error - prevError) / dt;
+        integral += error * dt;
+        prevError = error;
+        return params.p * error + params.i * integral + params.d * dx;
+    }
+};
+const PIDParams AngleParams{0.25, 0.003, 0};
 
 template <typename T>
 T bound(T v, T lb, T ub) {
@@ -84,18 +109,52 @@ double rad2deg(double rad) { return rad * 180 / M_PI; }
 double sinn(double x) { return sin(x * M_PI / 2); }  // [0..1] maps to [0..1]
 
 const auto cpdia = 1200;
-Point selfPos, oppPos, cpPos;
+Vec selfPos, oppPos, cpPos;
 int cpDist, cpAngle;
 ll timer = 0;
 double lastAngle;
+Vec lastPos;
 
-Point getDestPos() {
+class Pod {
+    PIDController anglePID;
+    Vec pos, lastPos;
+    Vec targetPos;
+    double thrust;
+
+   public:
+    Pod() : anglePID(AngleParams) {}
+    virtual void update(Vec newPos, Vec oppPos, Vec cpPos){};
+    virtual void output(ctr(ostream) os){};
+};
+class RunnerPod : public Pod {
+   public:
+    RunnerPod() : Pod() {}
+    void update(Vec newPos, Vec oppPos, Vec cpPos) override{
+
+    };
+};
+Pod* pod = new RunnerPod();
+Vec getDestPos() {
     if (abs(cpAngle) > 90 || abs(cpAngle) < 5) return cpPos;
     const int effectiveRange = cpdia * 4;
     auto dirVec = cpPos - selfPos;
+    auto velVec = selfPos - lastPos;
+    cerr << "dir: " << dirVec << endl;
+    cerr << "Vel: " << velVec << endl;
 
-    auto deflectAngle = deg2rad(bound<double>(lerp<double>(lastAngle, cpAngle, 0.5) * 5, -90, 90));
+    auto deflectAngle = deg2rad(
+        bound<double>(lerp<double>(lastAngle, cpAngle, 0.5) * 5, -90, 90));
     return selfPos + dirVec.rotate(deflectAngle);
+}
+
+Vec fixDrift(Vec destPos) {
+    auto velVec = selfPos - lastPos;
+    auto dirVec = cpPos - selfPos;
+    auto angleDiff = velVec.angle(dirVec);
+    if (abs(rad2deg(angleDiff)) > 45) return destPos;
+    cerr << "Angle diff: " << rad2deg(angleDiff) << endl;
+
+    return selfPos + (destPos - selfPos).rotate(-angleDiff * 0.25);
 }
 
 int main() {
@@ -107,12 +166,14 @@ int main() {
         cin.ignore();
         if (!timer) {
             lastAngle = cpAngle;
+            lastPos = selfPos;
         }
+        cerr << lastPos << " -> " << selfPos << endl;
         maxDist = max(maxDist, cpDist);
         const int check = cpdia * 3;
         auto normDistDiff =
             normalize<double>(bound(check - cpDist, 0, check), 0, check);
-        auto decTh = (int)denormalize<double>(sinn(normDistDiff), 0, 80);
+        auto decTh = (int)denormalize<double>(sinn(normDistDiff), 0, 50);
         auto decDegTh = 0;
         const int angleDecceleration = 45;
         const double angleDecFactor = 2.0;
@@ -122,7 +183,8 @@ int main() {
                               angleDecceleration, 180, 0, 80);
         }
         auto resThrust = bound(100 - decDegTh - decTh, 20, 100);
-        auto tarPos = getDestPos();
+        auto tarPos = fixDrift(getDestPos());
+        // auto tarPos = fixDrift(cpPos);
         cerr << cpAngle << ": " << tarPos << endl;
         cerr << normDistDiff << ", " << decTh << endl;
         cout << tarPos << " ";
@@ -134,8 +196,9 @@ int main() {
         } else {
             cout << resThrust;
         }
-        lastAngle = cpAngle;
         cout << endl;
+        lastAngle = cpAngle;
         timer++;
+        lastPos = selfPos;
     }
 }

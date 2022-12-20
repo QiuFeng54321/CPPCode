@@ -38,6 +38,7 @@ using pll = pair<ll, ll>;
 using pi = pair<int, int>;
 #pragma endregion
 
+#pragma region Helpers
 struct Vec {
     double x, y;
     double abs() { return sqrt(x * x + y * y); }
@@ -108,6 +109,8 @@ double deg2rad(double deg) { return deg * (M_PI / 180); }
 double rad2deg(double rad) { return rad * 180 / M_PI; }
 double sinn(double x) { return sin(x * M_PI / 2); }  // [0..1] maps to [0..1]
 
+#pragma endregion
+
 const auto cpdia = 1200;
 Vec selfPos, oppPos, cpPos;
 int cpDist, cpAngle;
@@ -115,25 +118,38 @@ ll timer = 0;
 double lastAngle;
 Vec lastPos;
 
+struct GameParams {
+    ll tick;
+    Vec checkpointPos, opponentPos;
+    queue<Vec> checkpoints;
+    bool checkpointsRecorded;
+    int currentCheckpointIndex;
+};
+
 class Pod {
     PIDController anglePID;
     Vec pos, lastPos;
     Vec targetPos;
     double thrust;
+    bool boosted;
+    int shieldCd;
+    GameParams* gameParams;
 
    public:
-    Pod() : anglePID(AngleParams) {}
+    Pod(GameParams* gameParams)
+        : anglePID(AngleParams), gameParams(gameParams) {}
     virtual void update(Vec newPos, Vec oppPos, Vec cpPos){};
     virtual void output(ctr(ostream) os){};
 };
 class RunnerPod : public Pod {
    public:
-    RunnerPod() : Pod() {}
+    RunnerPod(GameParams* gameParams) : Pod(gameParams) {}
     void update(Vec newPos, Vec oppPos, Vec cpPos) override{
 
     };
 };
-Pod* pod = new RunnerPod();
+GameParams gameParams;
+Pod* pod = new RunnerPod(&gameParams);
 Vec getDestPos() {
     if (abs(cpAngle) > 90 || abs(cpAngle) < 5) return cpPos;
     const int effectiveRange = cpdia * 4;

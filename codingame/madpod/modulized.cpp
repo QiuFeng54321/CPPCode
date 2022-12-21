@@ -256,21 +256,21 @@ struct PIDParams {
     double p, i, d;
 };
 class PIDController {
-    PIDParams params;
-    double prevError, integral;
+    PIDParams Params;
+    double PrevError, Integral;
 
    public:
-    PIDController(PIDParams params) : params(params) {}
-    PIDController(double p, double i, double d) : params({p, i, d}) {}
+    PIDController(PIDParams params) : Params(params) {}
+    PIDController(double p, double i, double d) : Params({p, i, d}) {}
     double Update(double error, double dt = 1) {
-        var dx = (error - prevError) / dt;
-        integral += error * dt;
-        prevError = error;
-        return params.p * error + params.i * integral + params.d * dx;
+        var dx = (error - PrevError) / dt;
+        Integral += error * dt;
+        PrevError = error;
+        return Params.p * error + Params.i * Integral + Params.d * dx;
     }
     void Reset() {
-        integral = 0;
-        prevError = 0;
+        Integral = 0;
+        PrevError = 0;
     }
 };
 #pragma endregion

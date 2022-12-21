@@ -41,24 +41,51 @@ const double eps = 1e-5;
 
 #pragma region Helpers
 template <typename T>
-bool fpEqual(T a, T b) {
+bool FpEqual(T a, T b) {
     return abs(a - b) < eps;
 }
+
+template <typename T>
+T Bound(T v, T lb, T ub) {
+    return max(lb, min(ub, v));
+}
+template <typename T>
+T MapVal(T v, T a, T b, T c, T d) {
+    return (T)(c + ((double)(d - c)) * (v - a) / (b - a));
+}
+template <typename T>
+T Normalize(T v, T a, T b) {
+    return MapVal<T>(v, a, b, 0, 1);
+}
+template <typename T>
+T Denormalize(T v, T a, T b) {
+    return MapVal<T>(v, 0, 1, a, b);
+}
+
+template <typename T>
+T Lerp(T a, T b, double t) {
+    return (T)(a + (b - a) * t);
+}
+double DegToRad(double deg) { return deg * (M_PI / 180); }
+double RadToDeg(double rad) { return rad * 180 / M_PI; }
+double SinN(double x) { return sin(x * M_PI / 2); }  // [0..1] maps to [0..1]
+size_t Cycle(int i, size_t n) { return (size_t)(i < 0 ? i + n : i % n); }
 struct Vec {
     double x, y;
-    double abs() const { return sqrt(sqdist()); }
-    double angle() const { return atan2(y, x); }
-    // double angle(Vec base) { return atan2(det(base), dot(base)); }
-    double angle(Vec base) const { return angle() - base.angle(); }
-    double dot(Vec b) const { return x * b.x + y * b.y; }
-    double det(Vec b) const { return x * b.y - y * b.x; }
-    double sqdist() const { return x * x + y * y; }
-    double sqdist(Vec b) const { return operator-(b).sqdist(); };
-    Vec unit() const { return operator/(abs()); }
-    Vec rotate(double rad) const {
+    double Abs() const { return sqrt(SqDist()); }
+    double Angle() const { return atan2(y, x); }
+    // double angle(Vec base) { return atan2(Det(base), dot(base)); }
+    double Angle(Vec base) const { return Angle() - base.Angle(); }
+    double Dot(Vec b) const { return x * b.x + y * b.y; }
+    double Det(Vec b) const { return x * b.y - y * b.x; }
+    double SqDist() const { return x * x + y * y; }
+    double SqDist(Vec b) const { return operator-(b).SqDist(); };
+    Vec Unit() const { return operator/(Abs()); }
+    Vec Rotate(double rad) const {
         auto s = sin(rad), c = cos(rad);
         return {x * c - y * s, x * s + y * c};
     }
+    void OutputReal(ostream& os) { os << "(" << x << ", " << y << ")"; }
     friend ostream& operator<<(ostream& os, ctr(Vec) p) {
         os << (int)p.x << ' ' << (int)p.y;
         return os;
@@ -72,8 +99,158 @@ struct Vec {
     Vec operator-() const { return {-x, -y}; }
     Vec operator*(double s) const { return {x * s, y * s}; }
     Vec operator/(double s) const { return {x / s, y / s}; }
-    bool operator==(Vec b) const { return fpEqual(x, b.x) && fpEqual(y, b.y); }
+    bool operator==(Vec b) const { return FpEqual(x, b.x) && FpEqual(y, b.y); }
     bool operator!=(Vec b) const { return !operator==(b); }
+};
+struct Spline {
+    Vec A, P1, P2, B;
+    Vec AtTime(double t) const {
+        var c = Lerp(A, P1, t);
+        var d = Lerp(P1, P2, t);
+        var e = Lerp(P2, B, t);
+        var f = Lerp(c, d, t);
+        var g = Lerp(d, e, t);
+        return Lerp(f, g, t);
+    }
+};
+// http://www.jacos.nl/jacos_html/spline/circular/index.html
+class Polybezier {
+    using vd = vector<double>;
+    using pxy = pair<vd, vd>;
+    vector<Spline> Splines;
+    vector<Vec> Vertices;
+
+   public:
+    double MinWeight = 1;
+    bool IsCircular = true;
+
+   protected:
+    vd ThomasCircular(vd r, vd a, vd b, vd c) {
+        double m;
+        var n = r.size();
+        vd lc(n);
+        lc[0] = a[0];
+        var lr = c[n - 1];
+        var i = 0;
+        for (; i < n - 3; i++) {
+            m = a[i + 1] / b[i];
+            b[i + 1] -= m * c[i];
+            r[i + 1] -= m * r[i];
+            lc[i + 1] = -m * lc[i];
+            m = lr / b[i];
+            b[n - 1] -= m * lc[i];
+            lr = -m * c[i];
+            r[n - 1] -= m * r[i];
+        }
+        {
+            m = a[i + 1] / b[i];
+            b[i + 1] -= m * c[i];
+            r[i + 1] -= m * r[i];
+            c[i + 1] -= m * lc[i];
+            m = lr / b[i];
+            b[n - 1] -= m * lc[i];
+            a[n - 1] -= m * c[i];
+            r[n - 1] = r[n - 1] - m * r[i];
+        }
+        i = n - 2;
+        {
+            m = a[i + 1] / b[i];
+            b[i + 1] -= m * c[i];
+            r[i + 1] -= m * r[i];
+        }
+        vd x(n);
+        x[n - 1] = r[n - 1] / b[n - 1];
+        lc[n - 2] = 0;
+        for (i = n - 2; i >= 0; --i) {
+            x[i] = (r[i] - c[i] * x[i + 1] - lc[i] * x[n - 1]) / b[i];
+        }
+        return x;
+    }
+
+    /* return x and y values of knots */
+    pxy ZipCoords() {
+        pxy res;
+        for (car[x, y] : Vertices) {
+            res.first.push_back(x);
+            res.second.push_back(y);
+        }
+        return res;
+    }
+    pxy ComputeCPCircW(vd K, vd W) {
+        double frac_i;
+        var n = K.size();
+        vd p2(n);
+        /*rhs vector*/
+        vd a, b, c, r;
+        for (var i = 0; i < n; i++) {
+            frac_i = W[i] / W[Cycle(i + 1, n)];
+            a.pb(1 * W[i] * W[i]);
+            b.pb(2 * W[Cycle(i - 1, n)] * (W[Cycle(i - 1, n)] + W[i]));
+            c.pb(W[Cycle(i - 1, n)] * W[Cycle(i - 1, n)] *
+                 frac_i);  // W[i]/W[i+1];
+            r.pb(pow(W[Cycle(i - 1, n)] + W[i], 2) * K[i] +
+                 pow(W[Cycle(i - 1, n)], 2) * (1 + frac_i) *
+                     K[Cycle(i + 1, n)]);
+        }
+        var p1 = ThomasCircular(r, a, b, c);
+        for (var i = 0; i < n; i++) {  // p2[i]=2*K[i+1]-p1[i+1];
+            p2[i] = K[Cycle(i + 1, n)] * (1 + W[i] / W[Cycle(i + 1, n)]) -
+                    p1[Cycle(i + 1, n)] * (W[i] / W[Cycle(i + 1, n)]);
+        }
+        return {p1, p2};
+    }
+    double Weighting(double x1, double x2, double y1, double y2) {
+        /* calculate Euclidean distance */
+        var d = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
+        // if the weight is too small, the calculation becomes instable
+        return d < MinWeight ? MinWeight : d;
+    }
+    /*computes spline control points*/
+    void UpdateSplines() {
+        Splines.clear();
+        var[x, y] = ZipCoords();
+        var nKnots = Vertices.size();
+        vd weights(nKnots);
+        for (var i = 0; i < nKnots; i++) {
+            weights[i] =
+                Weighting(x[(i + 1) % nKnots], x[i], y[(i + 1) % nKnots], y[i]);
+        }
+        var px = ComputeCPCircW(x, weights);
+        var py = ComputeCPCircW(y, weights);
+        var i = 0;
+        for (; i < nKnots - 1; i++) {
+            Splines.pb(Spline{{x[i], y[i]},
+                              {px.first[i], py.first[i]},
+                              {px.second[i], py.second[i]},
+                              {x[i + 1], y[i + 1]}});
+        }
+        if (IsCircular)  // for circular loops
+        {
+            Splines.pb(Spline{{x[i], y[i]},
+                              {px.first[i], py.first[i]},
+                              {px.second[i], py.second[i]},
+                              {x[0], y[0]}});
+        }
+    }
+
+   public:
+    Polybezier(vector<Vec> points, bool circular = true, double minWeight = 1)
+        : Vertices(points), MinWeight(minWeight), IsCircular(circular) {}
+    void AddPoint(Vec p) { Vertices.push_back(p); }
+    void Generate() { UpdateSplines(); }
+    vector<Vec> BakeTime(int samples) {
+        vector<Vec> bakedPoints;
+        if (samples < 2) return bakedPoints;
+        double interval = 1.0 / (samples - 1);
+        for (var j = 0; j < Splines.size(); j++) {
+            car spline = Splines[j];
+            if (!j) bakedPoints.push_back(spline.AtTime(0));
+            for (var i = 1; i < samples; i++) {
+                bakedPoints.push_back(spline.AtTime(i * interval));
+            }
+        }
+        return bakedPoints;
+    }
 };
 struct PIDParams {
     double p, i, d;
@@ -85,43 +262,17 @@ class PIDController {
    public:
     PIDController(PIDParams params) : params(params) {}
     PIDController(double p, double i, double d) : params({p, i, d}) {}
-    double update(double error, double dt = 1) {
+    double Update(double error, double dt = 1) {
         var dx = (error - prevError) / dt;
         integral += error * dt;
         prevError = error;
         return params.p * error + params.i * integral + params.d * dx;
     }
-    void reset() {
+    void Reset() {
         integral = 0;
         prevError = 0;
     }
 };
-
-template <typename T>
-T bound(T v, T lb, T ub) {
-    return max(lb, min(ub, v));
-}
-template <typename T>
-T mapVal(T v, T a, T b, T c, T d) {
-    return (T)(c + ((double)(d - c)) * (v - a) / (b - a));
-}
-template <typename T>
-T normalize(T v, T a, T b) {
-    return mapVal<T>(v, a, b, 0, 1);
-}
-template <typename T>
-T denormalize(T v, T a, T b) {
-    return mapVal<T>(v, 0, 1, a, b);
-}
-
-template <typename T>
-T lerp(T a, T b, double t) {
-    return (T)(a + (b - a) * t);
-}
-double deg2rad(double deg) { return deg * (M_PI / 180); }
-double rad2deg(double rad) { return rad * 180 / M_PI; }
-double sinn(double x) { return sin(x * M_PI / 2); }  // [0..1] maps to [0..1]
-
 #pragma endregion
 
 struct Checkpoint;
@@ -132,225 +283,217 @@ class Pod;
 class RunnerPod;
 
 struct Checkpoint {
-    Vec pos;
-    Checkpoint *next = nullptr, *prev = nullptr;
+    Vec Pos;
+    Checkpoint *Next = nullptr, *Prev = nullptr;
 };
 struct GameState {
-    ll tick;
-    Vec checkpointPos;
-    int checkpointDist, checkpointAngle;
-    Checkpoint *startCp, *currentCp, *maxDistCp;
-    bool checkpointsRecorded;
-    int currentCheckpointIndex;
-    vector<Enemy> enemies;
+    ll Tick;
+    Vec CheckpointPos;
+    int CheckpointDist, CheckpointAngle;
+    Checkpoint *StartCp, *CurrentCp, *MaxDistCp;
+    bool CheckpointsRecorded;
+    int CurrentCheckpointIndex;
+    vector<Enemy> Enemies;
 };
 
-const auto cpdia = 1200, poddia = 800;
+const auto CPDia = 1200, PodDia = 800;
 const PIDParams AngleParams{0.25, 0.005, -0.01};
-GameState gameState;
+GameState GameStates;
 
 class Entity {
    public:
-    Vec pos, lastPos;
-    Vec velocityVec() const { return pos - lastPos; }
-    void updatePos(Vec p) {
-        lastPos = pos;
-        pos = p;
+    Vec Pos, LastPos;
+    Vec VelocityVec() const { return Pos - LastPos; }
+    void UpdatePos(Vec p) {
+        LastPos = Pos;
+        Pos = p;
     }
-    double whenCollide(Entity another) {
+    double WhenCollide(Entity another) {
         // https://gamedev.stackexchange.com/questions/97337/detect-if-two-objects-are-going-to-collide
-        var b = velocityVec();
-        var d = another.velocityVec();
-        var dp = pos - another.pos;
+        var b = VelocityVec();
+        var d = another.VelocityVec();
+        var dp = Pos - another.Pos;
         var dv = b - d;
-        var mintime = -dp.dot(dv) / dv.dot(dv);
-        var minsqdist = (dv * mintime + dp).sqdist();
+        var mintime = -dp.Dot(dv) / dv.Dot(dv);
+        var minsqdist = (dv * mintime + dp).SqDist();
         cerr << "Min time: " << mintime << endl;
         cerr << "Min dist: " << sqrt(minsqdist) << endl;
-        if (mintime < 0 || minsqdist > poddia * poddia) return -1;
+        if (mintime < 0 || minsqdist > PodDia * PodDia) return -1;
         return mintime;
     }
 };
 class Enemy : public Entity {};
 class Pod : public Entity {
    public:
-    PIDController anglePID;
-    Vec targetPos;
-    double thrust;
-    bool boosted;
-    int shieldCd;
-    bool boostNextRound, shieldNextRound;
-    GameState* gameState;
-    double velRadToCp;
-    Vec targetDirVec;
+    PIDController AnglePID;
+    Vec TargetPos;
+    double Thrust;
+    bool Boosted;
+    int ShieldCd;
+    bool BoostNextRound, ShieldNextRound;
+    GameState* GameStates;
+    double VelRadToCp;
+    Vec TargetDirVec;
 
-    Pod(GameState* gameState) : anglePID(AngleParams), gameState(gameState) {}
-    virtual void update(Vec newPos) { updatePos(newPos); };
-    virtual void output(ostream& os) {
-        os << targetPos << ' ';
-        if (boostNextRound) {
+    Pod(GameState* gameStates)
+        : AnglePID(AngleParams), GameStates(gameStates) {}
+    virtual void Update(Vec newPos) { UpdatePos(newPos); };
+    virtual void Output(ostream& os) {
+        os << TargetPos << ' ';
+        if (BoostNextRound) {
             os << "BOOST";
-            boosted = true;
-            boostNextRound = false;
-        } else if (shieldNextRound) {
+            Boosted = true;
+            BoostNextRound = false;
+        } else if (ShieldNextRound) {
             os << "SHIELD";
-            shieldCd = 3;
-            shieldNextRound = false;
-        } else if (shieldCd == 0) {
-            os << thrust;
+            ShieldCd = 3;
+            ShieldNextRound = false;
+        } else if (ShieldCd == 0) {
+            os << Thrust;
         } else {
             os << 0;
-            shieldCd = max(0, shieldCd - 1);
+            ShieldCd = max(0, ShieldCd - 1);
         }
         os << endl;
     };
-    void processAngle() {
-        auto velVec = pos - lastPos;
-        targetDirVec = gameState->checkpointPos - pos;
-        velRadToCp = velVec.angle(targetDirVec);
+    void ProcessAngle() {
+        auto velVec = Pos - LastPos;
+        TargetDirVec = GameStates->CheckpointPos - Pos;
+        VelRadToCp = velVec.Angle(TargetDirVec);
     }
-    void processThrust() {
-        const int check = cpdia * 2;
-        auto normDistDiff = normalize<double>(
-            bound(check - gameState->checkpointDist, 0, check), 0, check);
-        auto decTh = (int)(sinn(normDistDiff) * 50);
+    void ProcessThrust() {
+        const int check = CPDia * 2;
+        auto normDistDiff = Normalize<double>(
+            Bound(check - GameStates->CheckpointDist, 0, check), 0, check);
+        auto decTh = (int)(SinN(normDistDiff) * 50);
         auto decDegTh = 0;
         const int angleDecceleration = 45;
         const double angleDecFactor = 2.0;
-        if (abs(gameState->checkpointAngle) > angleDecceleration) {
-            decDegTh = (int)(angleDecFactor *
-                             mapVal(bound(abs(gameState->checkpointAngle),
+        if (abs(GameStates->CheckpointAngle) > angleDecceleration) {
+            decDegTh = (int)(MapVal(Bound(abs(GameStates->CheckpointAngle),
                                           angleDecceleration, 180),
-                                    angleDecceleration, 180, 0, 80));
+                                    angleDecceleration, 180, 0, 100));
         }
-        thrust = bound(100 - decDegTh - decTh, 0, 100);
-    }
-    void deflectAngle() {
-        if (abs(velRadToCp) > M_PI_2 || abs(velRadToCp) < deg2rad(5)) return;
-        auto dirVec = gameState->checkpointPos - pos;
-        auto velVec = pos - lastPos;
-        cerr << "dir: " << dirVec << endl;
-        cerr << "Vel: " << velVec << endl;
-        auto deflectAngle = bound<double>(velRadToCp * 5, -M_PI_2, M_PI_2);
-        targetPos = pos + dirVec.rotate(deflectAngle);
+        Thrust = Bound(100 - decDegTh - decTh, 0, 100);
     }
 
-    void fixDrift() {
-        if (abs(rad2deg(velRadToCp)) > 90) return;
-        cerr << "Angle diff: " << rad2deg(velRadToCp) << endl;
-        targetPos =
-            pos + (targetPos - pos).rotate(-anglePID.update(velRadToCp));
+    void FixDrift() {
+        if (abs(RadToDeg(VelRadToCp)) > 90) return;
+        cerr << "Angle diff: " << RadToDeg(VelRadToCp) << endl;
+        TargetPos =
+            Pos + (TargetPos - Pos).Rotate(-AnglePID.Update(VelRadToCp));
     }
-    void dealWithCollision() {
-        if (shieldCd > 0) return;
-        for (car enemy : gameState->enemies) {
-            var collisionTime = whenCollide(enemy);
-            if (collisionTime == -1 || collisionTime > 6) continue;
-            var angleDiff = enemy.velocityVec().angle(targetDirVec);
-            if (abs(angleDiff) <= deg2rad(30)) continue;
+    void DealWithCollision() {
+        if (ShieldCd > 0) return;
+        for (car enemy : GameStates->Enemies) {
+            var collisionTime = WhenCollide(enemy);
+            if (collisionTime == -1 || collisionTime > 5) continue;
+            var angleDiff = enemy.VelocityVec().Angle(TargetDirVec);
+            if (abs(angleDiff) <= DegToRad(45)) continue;
             // TODO let the enemy collide if it's good for me
-            shieldNextRound = true;
+            ShieldNextRound = true;
         }
     }
 };
 class RunnerPod : public Pod {
    public:
-    RunnerPod(GameState* gameState) : Pod(gameState) {}
-    void update(Vec newPos) override {
-        Pod::update(newPos);
-        processAngle();
-        targetPos = gameState->checkpointPos;
+    RunnerPod(GameState* gameStates) : Pod(gameStates) {}
+    void Update(Vec newPos) override {
+        Pod::Update(newPos);
+        ProcessAngle();
+        TargetPos = GameStates->CheckpointPos;
         // deflectAngle();
-        fixDrift();
-        processThrust();
-        decideBoost();
-        targetNext();
-        dealWithCollision();
+        FixDrift();
+        ProcessThrust();
+        DecideBoost();
+        TargetNext();
+        DealWithCollision();
     }
-    void decideBoost() {
-        if (boosted) return;
-        // if (!gameState->checkpointsRecorded) return;
-        // if (gameState->currentCp != gameState->maxDistCp) return;
-        // if (abs(rad2deg(velRadToCp)) > 8) return;
-        // if (gameState->checkpointDist < cpdia * 3) return;
-        boostNextRound = true;
-        targetPos = gameState->checkpointPos;
+    void DecideBoost() {
+        if (Boosted) return;
+        // if (!GameStates->checkpointsRecorded) return;
+        // if (GameStates->currentCp != GameStates->maxDistCp) return;
+        // if (abs(RadToDeg(VelRadToCp)) > 8) return;
+        // if (GameStates->checkpointDist < CPDia * 3) return;
+        BoostNextRound = true;
+        TargetPos = GameStates->CheckpointPos;
     }
-    void targetNext() {
-        if (!gameState->checkpointsRecorded) return;
-        if (gameState->checkpointDist > cpdia) return;
-        if (abs(velRadToCp) > deg2rad(6)) return;
-        targetPos = gameState->currentCp->next->pos;
+    void TargetNext() {
+        if (!GameStates->CheckpointsRecorded) return;
+        if (GameStates->CheckpointDist > CPDia) return;
+        if (abs(VelRadToCp) > DegToRad(6)) return;
+        TargetPos = GameStates->CurrentCp->Next->Pos;
     }
 };
 
-Pod* pod = new RunnerPod(&gameState);
-void find_max_dist_cp() {
-    gameState.maxDistCp = gameState.startCp;
-    var cp = gameState.startCp;
+Pod* ActivePod = new RunnerPod(&GameStates);
+void FindMaxDistCp() {
+    GameStates.MaxDistCp = GameStates.StartCp;
+    var cp = GameStates.StartCp;
     do {
-        var angle = (cp->pos - cp->prev->pos)
-                        .angle(cp->prev->pos - cp->prev->prev->pos);
-        var dist = cp->pos.sqdist(cp->prev->pos);
-        if (abs(angle) < deg2rad(30) || dist > pow(cpdia * 3, 2)) {
-            if (dist > gameState.maxDistCp->pos.sqdist(
-                           gameState.maxDistCp->prev->pos)) {
-                gameState.maxDistCp = cp;
+        var angle = (cp->Pos - cp->Prev->Pos)
+                        .Angle(cp->Prev->Pos - cp->Prev->Prev->Pos);
+        var dist = cp->Pos.SqDist(cp->Prev->Pos);
+        if (abs(angle) < DegToRad(30) || dist > pow(CPDia * 3, 2)) {
+            if (dist > GameStates.MaxDistCp->Pos.SqDist(
+                           GameStates.MaxDistCp->Prev->Pos)) {
+                GameStates.MaxDistCp = cp;
             }
         }
-        cp = cp->next;
-    } while (cp != gameState.startCp);
+        cp = cp->Next;
+    } while (cp != GameStates.StartCp);
 }
-void record_cp() {
-    if (!gameState.checkpointsRecorded) {
-        if (gameState.startCp == nullptr) {
-            gameState.currentCp = gameState.startCp =
-                new Checkpoint{gameState.checkpointPos};
+void RecordCp() {
+    if (!GameStates.CheckpointsRecorded) {
+        if (GameStates.StartCp == nullptr) {
+            GameStates.CurrentCp = GameStates.StartCp =
+                new Checkpoint{GameStates.CheckpointPos};
         } else {
-            if (gameState.currentCp != gameState.startCp &&
-                gameState.startCp->pos == gameState.checkpointPos) {
-                gameState.checkpointsRecorded = true;
-                gameState.currentCp->next = gameState.startCp;
-                gameState.startCp->prev = gameState.currentCp;
+            if (GameStates.CurrentCp != GameStates.StartCp &&
+                GameStates.StartCp->Pos == GameStates.CheckpointPos) {
+                GameStates.CheckpointsRecorded = true;
+                GameStates.CurrentCp->Next = GameStates.StartCp;
+                GameStates.StartCp->Prev = GameStates.CurrentCp;
                 // Find max distance cp
-                find_max_dist_cp();
-            } else if (gameState.currentCp->pos != gameState.checkpointPos) {
-                gameState.currentCp->next =
-                    new Checkpoint{gameState.checkpointPos};
-                gameState.currentCp->next->prev = gameState.currentCp;
-                gameState.currentCp = gameState.currentCp->next;
+                FindMaxDistCp();
+            } else if (GameStates.CurrentCp->Pos != GameStates.CheckpointPos) {
+                GameStates.CurrentCp->Next =
+                    new Checkpoint{GameStates.CheckpointPos};
+                GameStates.CurrentCp->Next->Prev = GameStates.CurrentCp;
+                GameStates.CurrentCp = GameStates.CurrentCp->Next;
             }
         }
     } else {
-        cerr << "Reocrded: max " << gameState.maxDistCp->pos << endl;
-        while (gameState.currentCp->pos != gameState.checkpointPos) {
-            // if (gameState.currentCp == gameState.maxDistCp && !pod->boosted)
+        cerr << "Reocrded: max " << GameStates.MaxDistCp->Pos << endl;
+        while (GameStates.CurrentCp->Pos != GameStates.CheckpointPos) {
+            // if (GameStates.currentCp == GameStates.maxDistCp &&
+            // !ActivePod->Boosted)
             // {
-            //     gameState.maxDistCp = gameState.maxDistCp->next;
+            //     GameStates.maxDistCp = GameStates.maxDistCp->next;
             // }
-            gameState.currentCp = gameState.currentCp->next;
-            pod->anglePID.reset();
+            GameStates.CurrentCp = GameStates.CurrentCp->Next;
+            ActivePod->AnglePID.Reset();
         }
     }
 }
 int main() {
     // game loop
     while (1) {
-        if (!gameState.tick) {
-            gameState.enemies.push_back(Enemy{});
+        if (!GameStates.Tick) {
+            GameStates.Enemies.push_back(Enemy{});
         }
         Vec podPos;
-        cin >> podPos >> gameState.checkpointPos >> gameState.checkpointDist >>
-            gameState.checkpointAngle;
-        for (Enemy& enemy : gameState.enemies) {
+        cin >> podPos >> GameStates.CheckpointPos >>
+            GameStates.CheckpointDist >> GameStates.CheckpointAngle;
+        for (Enemy& enemy : GameStates.Enemies) {
             Vec pos;
             cin >> pos;
-            enemy.updatePos(pos);
+            enemy.UpdatePos(pos);
         }
         cin.ignore();
-        record_cp();
-        pod->update(podPos);
-        pod->output(cout);
-        gameState.tick++;
+        RecordCp();
+        ActivePod->Update(podPos);
+        ActivePod->Output(cout);
+        GameStates.Tick++;
     }
 }

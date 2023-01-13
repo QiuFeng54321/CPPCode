@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: K
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "K"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,27 @@ struct DSU {
 #endif
 #pragma endregion
 
+const int N = 200;
+ll a[N][N];
+ll ans, minA = 1e18;
+int n;
+
 void solve() {
-    
+    cin >> n;
+    f0r(i, n) {
+        f0r(j, n) {
+            cin >> a[i][j];
+            ans += a[i][j];
+            if (i == n - j - 1) {
+                minA = min(minA, a[i][j]);
+            }
+        }
+    }
+    cout << ans - minA << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    solve();
     return 0;
 }

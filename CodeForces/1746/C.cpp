@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,29 @@ struct DSU {
 #endif
 #pragma endregion
 
+int t, n;
+const int N = 200005;
+int a[N];
+int idx[N];
+
 void solve() {
-    
+    cin >> n;
+    f0r(i, n) {
+        cin >> a[i];
+        a[i] --;
+        idx[a[i]] = i;
+    }
+    f0r(i, n) {
+        cout << min(idx[i] + 2, n) << ' ';
+    }
+    cout << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
     return 0;
 }

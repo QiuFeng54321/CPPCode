@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: D
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "D"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,8 +125,23 @@ struct DSU {
 #endif
 #pragma endregion
 
-void solve() {
-    
+int t, n, m;
+const int N = 200002;
+ll a[N], b[N], x[N];
+
+bool solve() {
+    cin >> n;
+    bool ok = true;
+    f0r(i, n) {
+        cin >> a[i];
+    }
+    f0r(i, n) {
+        cin >> b[i];
+    }
+    cin >> m;
+    f0r(i, m) {
+        cin >> x[i];
+    }
 }
 
 int main() {

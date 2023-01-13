@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,38 @@ struct DSU {
 #endif
 #pragma endregion
 
+int t, n;
+const int N = 100;
+int a[N];
+
+bool is(int k) {
+    int l = -1, r = n - 1;
+    f0r(i, k) {
+        if (l >= r) return false;
+        while (l < r && a[r] > k - i) r--;
+        if (l == r) return false;
+        l++;
+        r--;
+        dbgl(k << ": " << l << ".." << r);
+    }
+    return true;
+}
+
 void solve() {
-    
+    cin >> n;
+    f0r(i, n) {
+        cin >> a[i];
+    }
+    sort(a, a + n);
+    int ans = last_true<int>(0, 101, is);
+    cout << ans << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
     return 0;
 }

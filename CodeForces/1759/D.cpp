@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: D
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "D"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,45 @@ struct DSU {
 #endif
 #pragma endregion
 
+ll t, n, m, k;
+
+
 void solve() {
-    
+    cin >> n >> m;
+    int mod2 = 0, mod5 = 0;
+    ll n2 = n;
+    while (n2 % 2 == 0) {
+        n2 >>= 1;
+        mod2 ++;
+    }
+    while (n2 % 5 == 0) {
+        n2 /= 5;
+        mod5 ++;
+    }
+    k = 1;
+    while (mod2 < mod5 && k * 2 <= m) {
+        mod2 ++;
+        k <<= 1;
+    }
+    while (mod5 < mod2 && k * 5 <= m) {
+        mod5 ++;
+        k *= 5;
+    }
+    while (k * 10 <= m) {
+        k *= 10;
+    }
+    if (k == 1) {
+        cout << n * m << endl;
+    } else {
+        cout << n * k * (m / k) << endl;
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(i, t) {
+        solve();
+    }
     return 0;
 }

@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: F
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "F"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,7 +18,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #pragma region States
 #define DEBUG 0
@@ -58,14 +58,14 @@ LANG: C++
 #define ctr(t) const t&
 #define var auto
 #define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define f0r(i, n) for (int i = 0; i < n; i++)
+#define f0ri(i, n) for (int i = 0; i <= n; i++)
+#define f1r(i, n) for (int i = 1; i < n; i++)
+#define f1ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -82,7 +82,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -125,11 +125,50 @@ struct DSU {
 #endif
 #pragma endregion
 
+const int N = 200002;
+ll a[N], p[N];
+int n;
+ll c, d;
+// ll inf = 1e18;
+
+bool is(ll k) {
+    ll gain = 0;
+    k++;
+    ll cycles = d / k;
+    ll rem = d % k;
+    gain = cycles * p[min<ll>(k - 1, n - 1)] + (rem == 0 ? 0 : p[min<ll>(rem - 1, n - 1)]);
+    dbgl(k << ": " << cycles << " ... " << rem);
+    dbgl(gain);
+    dbgl((gain >= c ? "OK" : "NO"));
+    return gain >= c;
+}
+
 void solve() {
-    
+    cin >> n >> c >> d;
+    f0r(i, n) {
+        cin >> a[i];
+    }
+    sort(a, a + n, greater<ll>());
+    f0r(i, n) {
+        p[i] = a[i];
+        if (i) p[i] += p[i - 1];
+    }
+    dbgs f0r(i, n) cout << p[i] << ' ';
+    dbgl("");
+    var ans = last_true<ll>(0, d, is);
+    if (ans == -1) {
+        cout << "Impossible" << endl;
+    } else if (ans >= d) {
+        cout << "Infinity" << endl;
+    } else {
+        cout << ans << endl;
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    int t;
+    cin >> t;
+    f0r(_, t) { solve(); }
     return 0;
 }

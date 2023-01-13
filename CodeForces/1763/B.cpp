@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: B
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "B"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -20,7 +20,7 @@ LANG: C++
 #include <iomanip>
 
 #pragma region States
-#define DEBUG 0
+#define DEBUG 1
 #define USE_FILE 0
 #define MOD 1000000007
 #define USE_DSU 0
@@ -125,11 +125,47 @@ struct DSU {
 #endif
 #pragma endregion
 
+int t, n, k;
+const int N = 100002;
+ll h[N], p[N];
+int idx[N];
+
+bool cmp (int a, int b) {
+    return p[a] < p[b];
+}
+
 void solve() {
-    
+    cin >> n >> k;
+    f0r(i, n) {
+        cin >> h[i];
+        idx[i] = i;
+    }
+    f0r(i, n) {
+        cin >> p[i];
+    }
+    sort(idx, idx + n, cmp);
+    int i = 0;
+    ll dmg = k;
+    while (k > 0 && i != n) {
+        while (i != n && h[idx[i]] - dmg <= 0) i++;
+        if (i == n) {
+            break;
+        }
+        k -= p[idx[i]];
+        dmg += max(0, k);
+    }
+    if (i == n && h[idx[n - 1]] - dmg <= 0) {
+        cout << "YES" << endl;
+    } else {
+        cout << "NO" << endl;
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
     return 0;
 }

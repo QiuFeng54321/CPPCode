@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: D1
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "D1"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,37 @@ struct DSU {
 #endif
 #pragma endregion
 
+int l, r;
+const int N = 1 << 17;
+int t, n;
+int a[N];
+int cnt[31][2];
+
 void solve() {
-    
+    cin >> l >> r;
+    n = r - l + 1;
+    memset(cnt, 0, sizeof(cnt));
+    f0r(i, n) {
+        int x;
+        cin >> x;
+        for (int j = 0; j < 32; j++, x >>= 1) {
+            cnt[j][x & 1] ++;
+        }
+    }
+    int x = 0;
+    for (int i = 0; i < 32; i++) {
+        if (cnt[i][1] > cnt[i][0]) {
+            x |= 1 << i;
+        }
+    }
+    cout << x << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
     return 0;
 }

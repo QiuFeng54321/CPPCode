@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: E
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "E"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -20,7 +20,7 @@ LANG: C++
 #include <iomanip>
 
 #pragma region States
-#define DEBUG 0
+#define DEBUG 1
 #define USE_FILE 0
 #define MOD 1000000007
 #define USE_DSU 0
@@ -125,11 +125,86 @@ struct DSU {
 #endif
 #pragma endregion
 
+const int N = 10002;
+
+int n, cnt;
+ll nums[N];
+int k[N];
+int idx[N];
+bool isTop[N];
+int tower[N];
+int sortedH[N];
+vector<int> towers[N];
+vector<int> sortedSegs[N];
+int split, combination;
+
+bool cmp(int a, int b) {return nums[a] > nums[b];}
+
+void moveT(int from, int to, int amount) {
+    if (amount == 0) return;
+    if (!towers[to].empty()) {
+        isTop[towers[to].back()] = false;
+        combination ++;
+    }
+    stack<int> tmp;
+    f0r(_, amount) {
+        tmp.push(towers[from].back());
+        towers[from].pop_back();
+    }
+    if (!towers[from].empty()) {
+        isTop[towers[from].back()] = true;
+    }
+    while (!tmp.empty()) {
+        towers[to].push_back(tmp.top());
+        tower[tmp.top()] = to;
+        tmp.pop();
+    }
+}
+
 void solve() {
-    
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> n;
+    int flatIdx = 0;
+    f0r(i, n) {
+        cin >> k[i];
+        cnt += k[i];
+        f0r(j, k[i]) {
+            cin >> nums[flatIdx];
+            idx[flatIdx] = flatIdx;
+            flatIdx++;
+        }
+    }
+    sort(idx, idx + cnt, cmp); // Compression
+    flatIdx = 0;
+    f0r(i, n) {
+        dbg("Tower " << i << ": ");
+        f0r(j, k[i]) {
+            dbg(idx[flatIdx] << ' ');
+            int numIdx = idx[flatIdx];
+            if (!towers[i].empty()) {
+                isTop[towers[i].back()] = false;
+                if (numIdx + 1 == towers[i].back()) {
+                    sortedH[i] = towers[i].size();
+                    sortedSegs[i].back()++;
+                } else {
+                    sortedSegs[i].push_back(1);
+                }
+            }
+            towers[i].push_back(numIdx);
+            isTop[numIdx] = true;
+            tower[numIdx] = i;
+            flatIdx++;
+        }
+        dbg(endl);
+    }
+    dbgs f0r(i, n) {
+        dbgl("SortedH[" << i << "] = " << sortedH[i]);
+    }
+    f0r(i, cnt) {
+
+    }
     return 0;
 }

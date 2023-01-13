@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: D
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "D"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -52,8 +52,8 @@ LANG: C++
 #define dbgl(stmt)
 #endif
 #define dbgs if (DEBUG)
-#define ff first
-#define ss second
+#define f first
+#define s second
 #define car const auto&
 #define ctr(t) const t&
 #define var auto

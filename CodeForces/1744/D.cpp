@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: D
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "D"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,7 +18,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #pragma region States
 #define DEBUG 0
@@ -58,14 +58,14 @@ LANG: C++
 #define ctr(t) const t&
 #define var auto
 #define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define f0r(i, n) for (int i = 0; i < n; i++)
+#define f0ri(i, n) for (int i = 0; i <= n; i++)
+#define f1r(i, n) for (int i = 1; i < n; i++)
+#define f1ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -82,7 +82,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -125,11 +125,47 @@ struct DSU {
 #endif
 #pragma endregion
 
+int t, n;
+const int N = 200002;
+ll a[N];
+int idx[N];
+
 void solve() {
-    
+    cin >> n;
+    int required = n;
+    f0r(i, n) {
+        cin >> a[i];
+        int idxC = i + 1;
+        idx[i] = 0;
+        while (idxC != 0 && (idxC & 1) == 0) {
+            idxC >>= 1;
+            idx[i]++;
+        }
+        while ((a[i] & 1) == 0) {
+            required--;
+            a[i] >>= 1;
+        }
+    }
+    sort(idx, idx + n, greater<int>());
+    dbgl("Required: " << required);
+    int ans = 0;
+    f0r(i, n) {
+        if (required <= 0) break;
+        if (n >> idx[i]) {
+            dbgl("+" << idx[i]);
+            ans++;
+            required -= idx[i];
+        }
+    }
+    if (required > 0)
+        cout << -1 << endl;
+    else
+        cout << ans << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) { solve(); }
     return 0;
 }

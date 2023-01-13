@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: F
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "F"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,7 +18,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #pragma region States
 #define DEBUG 0
@@ -58,14 +58,14 @@ LANG: C++
 #define ctr(t) const t&
 #define var auto
 #define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define f0r(i, n) for (int i = 0; i < n; i++)
+#define f0ri(i, n) for (int i = 0; i <= n; i++)
+#define f1r(i, n) for (int i = 1; i < n; i++)
+#define f1ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -82,7 +82,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -125,11 +125,44 @@ struct DSU {
 #endif
 #pragma endregion
 
+ll t, q, d, k;
+str append;
+
 void solve() {
-    
+    cin >> q;
+    ll la = 1, lb = 1;
+    bool bHigher = false, aHigher = false;
+    f0r(_, q) {
+        cin >> d >> k >> append;
+        if (d == 1) {
+            la += append.size() * k;
+            if (!aHigher)
+                for (char c : append) {
+                    if (c != 'a') {
+                        aHigher = true;
+                        break;
+                    }
+                }
+        } else {
+            lb += append.size() * k;
+            if (!bHigher)
+                for (char c : append) {
+                    if (c != 'a') {
+                        bHigher = true;
+                        break;
+                    }
+                }
+        }
+        if (bHigher || !aHigher && !bHigher && la < lb)
+            cout << "yes" << endl;
+        else
+            cout << "no" << endl;
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) { solve(); }
     return 0;
 }

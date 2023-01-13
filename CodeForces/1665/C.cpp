@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -52,8 +52,8 @@ LANG: C++
 #define dbgl(stmt)
 #endif
 #define dbgs if (DEBUG)
-#define ff first
-#define ss second
+#define f first
+#define s second
 #define car const auto&
 #define ctr(t) const t&
 #define var auto
@@ -125,11 +125,48 @@ struct DSU {
 #endif
 #pragma endregion
 
+int t, n;
+const int N = 200002;
+vector<int> a;
+ll ans;
+
+bool is(int x) {
+    ll res = 0;
+    for(int y : a) {
+        res += max(0, y - x);
+    }
+    return res <= x;
+}
+
 void solve() {
-    
+    a.clear();
+    ans = 0;
+    cin >> n;
+    a.resize(n);
+    f0r(i, n - 1) {
+        int par;
+        cin >> par;
+        a[par - 1] ++;
+    }
+    a.push_back(1);
+    sort(a.rbegin(), a.rend());
+    while (!a.empty() && a.back() <= 0) a.pop_back();
+    n = a.size();
+    // 从多到少inject
+    f0r(i, n) {
+        a[i] -= n - i;
+        ans ++;
+    }
+    while (!a.empty() && a.back() <= 0) a.pop_back();
+    int x = first_true<int>(0, N + 1, is);
+    cout << ans + x << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
     return 0;
 }

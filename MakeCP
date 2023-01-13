@@ -30,12 +30,13 @@ def usaco(loc: str, name: str):
     touch_in_out(fileLocation)
 
 def codeforces(loc: str, name: str):
-    contest = loc[:-1]
-    section = loc[-1].upper()
+    x = -2 if loc[-1].isdigit() else -1
+    contest = loc[:x]
+    section = loc[x:].upper()
     if name == None: name = section
     content = fill_template_content(template_content, name)
     srcdir = f"CodeForces/{contest}"
-    os.makedirs(srcdir)
+    os.makedirs(srcdir, exist_ok=True)
     fileLocation = f"{srcdir}/{section}"
     write_content(fileLocation, content)
     touch_in_out(fileLocation)

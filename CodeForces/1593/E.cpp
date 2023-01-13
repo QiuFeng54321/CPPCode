@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: E
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "E"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,58 @@ struct DSU {
 #endif
 #pragma endregion
 
+int t, n, k;
+const int N = 400002;
+vector<int> adj[N];
+int childCount[N];
+int age[N];
+
 void solve() {
-    
+    f0r(i, n) {
+        adj[i].clear();
+    }
+    memset(childCount, 0, sizeof(childCount));
+    memset(age, 0, sizeof(age));
+    cin >> n >> k;
+    f0r(_, n - 1) {
+        int u, v;
+        cin >> u >> v;
+        u--; v--;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+        childCount[u]++;
+        childCount[v]++;
+    }
+    queue<int> process;
+    f0r(i, n) {
+        if (childCount[i] == 1) {
+            age[i] = 1;
+            process.push(i);
+        }
+    }
+    while (!process.empty()) {
+        var par = process.front(); process.pop();
+        for (car child : adj[par]) {
+            if (childCount[child] == 1) continue;
+            childCount[child]--;
+            if (childCount[child] == 1) {
+                age[child] = age[par] + 1;
+                process.push(child);
+            }
+        }
+    }
+    int ans = 0;
+    f0r(i, n) {
+        if (age[i] > k) ans ++;
+    }
+    cout << ans << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
     return 0;
 }

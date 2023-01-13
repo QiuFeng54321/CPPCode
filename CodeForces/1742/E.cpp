@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: E
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "E"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,36 @@ struct DSU {
 #endif
 #pragma endregion
 
+const int N = 200005;
+
+int t, n, q, k;
+ll p[N], m[N], a[N];
+
+bool is(int i) {
+    return m[i] <= k;
+}
+
 void solve() {
-    
+    cin >> n >> q;
+    p[0] = m[0] = 0;
+    f0r(i, n) {
+        cin >> a[i];
+        p[i + 1] = p[i] + a[i];
+        m[i + 1] = max(m[i], a[i]);
+    }
+    f0r(i, q) {
+        cin >> k;
+        int ans = last_true<int>(0, n, is);
+        cout << p[ans] << ' ';
+    }
+    cout << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(i, t) {
+        solve();
+    }
     return 0;
 }

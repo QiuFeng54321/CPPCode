@@ -294,6 +294,7 @@ struct GameState {
     bool CheckpointsRecorded;
     int CurrentCheckpointIndex;
     vector<Enemy> Enemies;
+    queue<Vec> SmoothPath;
 };
 
 const auto CPDia = 1200, PodDia = 800;
@@ -326,7 +327,7 @@ class Enemy : public Entity {};
 class Pod : public Entity {
    public:
     PIDController AnglePID;
-    Vec TargetPos;
+    Vec TargetPos, OutputPos;
     double Thrust;
     bool Boosted;
     int ShieldCd;
@@ -339,7 +340,7 @@ class Pod : public Entity {
         : AnglePID(AngleParams), GameStates(gameStates) {}
     virtual void Update(Vec newPos) { UpdatePos(newPos); };
     virtual void Output(ostream& os) {
-        os << TargetPos << ' ';
+        os << OutputPos << ' ';
         if (BoostNextRound) {
             os << "BOOST";
             Boosted = true;
@@ -358,7 +359,7 @@ class Pod : public Entity {
     };
     void ProcessAngle() {
         auto velVec = Pos - LastPos;
-        TargetDirVec = GameStates->CheckpointPos - Pos;
+        TargetDirVec = TargetPos - Pos;
         VelRadToCp = velVec.Angle(TargetDirVec);
     }
     void ProcessThrust() {
@@ -380,7 +381,7 @@ class Pod : public Entity {
     void FixDrift() {
         if (abs(RadToDeg(VelRadToCp)) > 90) return;
         cerr << "Angle diff: " << RadToDeg(VelRadToCp) << endl;
-        TargetPos =
+        OutputPos =
             Pos + (TargetPos - Pos).Rotate(-AnglePID.Update(VelRadToCp));
     }
     void DealWithCollision() {
@@ -401,6 +402,7 @@ class RunnerPod : public Pod {
     void Update(Vec newPos) override {
         Pod::Update(newPos);
         ProcessAngle();
+        // TODO: Top of smooth path if possible
         TargetPos = GameStates->CheckpointPos;
         // deflectAngle();
         FixDrift();
@@ -424,12 +426,16 @@ class RunnerPod : public Pod {
         if (abs(VelRadToCp) > DegToRad(6)) return;
         TargetPos = GameStates->CurrentCp->Next->Pos;
     }
+    void FindNextSmoothPath() {
+
+    }
 };
 
 Pod* ActivePod = new RunnerPod(&GameStates);
 void FindMaxDistCp() {
     GameStates.MaxDistCp = GameStates.StartCp;
     var cp = GameStates.StartCp;
+    Polybezier smoothPath{{}};
     do {
         var angle = (cp->Pos - cp->Prev->Pos)
                         .Angle(cp->Prev->Pos - cp->Prev->Prev->Pos);
@@ -440,8 +446,14 @@ void FindMaxDistCp() {
                 GameStates.MaxDistCp = cp;
             }
         }
+        smoothPath.AddPoint(cp->Pos);
         cp = cp->Next;
     } while (cp != GameStates.StartCp);
+    smoothPath.Generate();
+    var nodes = smoothPath.BakeTime(10);
+    for (car p : nodes) {
+        GameStates.SmoothPath.push(p);
+    }
 }
 void RecordCp() {
     if (!GameStates.CheckpointsRecorded) {

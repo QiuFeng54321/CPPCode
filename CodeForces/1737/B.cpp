@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: B
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "B"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,29 @@ struct DSU {
 #endif
 #pragma endregion
 
+ll lsqrt(ll x) {
+    return last_true<ll>(1, 1e10, [x](ll a){return a * a <= x;});
+}
+
 void solve() {
-    
+    ll a, b;
+    cin >> a >> b;
+    ll as = lsqrt(a), bs = lsqrt(b);
+    ll ans = (bs - as + 1) * 3;
+    f0r(i, 3) {
+        if (as * (as + i) < a) ans --;
+        if (bs * (bs + i) > b) ans --;
+    }
+    cout << ans << "\n";
 }
 
 int main() {
     MAIN_FILE_HEADER
+    int t;
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
+    cout.flush();
     return 0;
 }

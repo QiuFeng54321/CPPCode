@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: N
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "N"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -126,10 +126,38 @@ struct DSU {
 #pragma endregion
 
 void solve() {
-    
+    str x;
+    int k, n;
+    cin >> x >> k;
+    n = x.size();
+    vector<int> pos[10];
+    f0r(i, n) {
+        pos[x[i] - '0'].push_back(i);
+    }
+    f0r(i, 10) {
+        reverse(pos[i].begin(), pos[i].end());
+    }
+    int last = 0;
+    int remain = n - k;
+    str ans;
+    f0r(step, remain) {
+        f0r(i, 10) {
+            if (step == 0 && i == 0) continue;
+            while (!pos[i].empty() && pos[i].back() < last) pos[i].pop_back();
+            if (pos[i].empty() || pos[i].back() - last > k) continue;
+            ans += i + '0';
+            k -= pos[i].back() - last;
+            last = pos[i].back() + 1;
+            break;
+        }
+    }
+    cout << ans << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    int t;
+    cin >> t;
+    f0r(_, t) {solve();}
     return 0;
 }

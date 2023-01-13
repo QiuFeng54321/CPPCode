@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C1
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C1"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -125,11 +125,50 @@ struct DSU {
 #endif
 #pragma endregion
 
+const int N = 100005;
+
+int n, q, t;
+
+ll psum[N], pxor[N], a[N];
+
+ll cost(int l, int r) {
+    return psum[r] - psum[l - 1] - (pxor[r] ^ pxor[l - 1]);
+}
+void query() {
+    int l, r;
+    cin >> l >> r;
+    ll ans = 0;
+    int ml, mr;
+    while (l <= r) {
+        ll c = cost(l, r);
+        if (c >= ans) {
+            ans = c;
+            ml = l;
+            mr = r;
+        }
+        if (cost(l + 1, r) > cost(l, r - 1)) l++;
+        else r--;
+    }
+    cout << ml << " " << mr << '\n';
+}
 void solve() {
-    
+    cin >> n >> q;
+    f1ri(i, n) {
+        cin >> a[i];
+        psum[i] = a[i] + psum[i - 1];
+        pxor[i] = a[i] ^ pxor[i - 1];
+    }
+    f0r(_, q) {
+        query();
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(_, t) {
+        solve();
+    }
+    cout.flush();
     return 0;
 }

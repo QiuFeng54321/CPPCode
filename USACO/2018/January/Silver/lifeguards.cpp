@@ -37,58 +37,47 @@ using pll = pair<ll, ll>;
 using pi = pair<int, int>;
 #pragma endregion
 
-const int N = 100000;
+const int N = 100002;
 int n;
-pair<ll, int> removedLen[N];  // {len, seg_i}
-pair<ll, int> verts[2 * N];   // {x, seg_i}
-pair<ll, ll> segs[N];         // {start, end}
+ll removedLen[N];            // len
+pair<ll, int> verts[2 * N];  // {x, seg_i}
+pair<ll, ll> segs[N];        // {start, end}
 
 void solve() {
     set<int> inSegs;                        // {seg_i}
     pair<ll, int> lastFinished = {-1, -1};  // {end_x, seg_i}
+    ll totalLen = 0;
+    ll lastX = 0;
+    ll minLen = 1e18;
     for (int i = 0; i < 2 * n; i++) {
         dbgs cout << "{" << verts[i].ff << ", " << verts[i].ss << "}";
         if (inSegs.size() == 1) {  // Only one segment
             dbgs cout << "1";
             if (lastFinished.ss != -1) {
                 dbgs cout << "f";
-                removedLen[*inSegs.begin()].ff +=
+                removedLen[*inSegs.begin()] +=
                     min(verts[i].ff - segs[*inSegs.begin()].ff,
                         verts[i].ff - lastFinished.ff);
             } else {
-                removedLen[*inSegs.begin()].ff +=
+                removedLen[*inSegs.begin()] +=
                     verts[i].ff - segs[*inSegs.begin()].ff;
             }
+        }
+        if (!inSegs.empty()) {
+            totalLen += verts[i].ff - lastX;
         }
         if (inSegs.count(verts[i].ss)) {  // Segment end
             inSegs.erase(verts[i].ss);
             lastFinished = verts[i];
+            minLen = min(minLen, removedLen[verts[i].ss]);
             dbgs cout << "- ";
         } else {  // Segment start
             inSegs.insert(verts[i].ss);
             dbgs cout << "+ ";
         }
-    }
-    sort(removedLen, removedLen + n);
-    dbgs cout << "\n";
-    dbgs for (int i = 0; i < n; i++) {
-        cout << removedLen[i].ss << ": " << removedLen[i].ff << "\n";
-    }
-    ll ans = 0;
-    ll lastX = 0;
-    for (int i = 0; i < 2 * n; i++) {
-        if (verts[i].ss == removedLen[0].ss) continue;
-        if (!inSegs.empty()) {
-            ans += verts[i].ff - lastX;
-        }
-        if (inSegs.count(verts[i].ss)) {  // Segment end
-            inSegs.erase(verts[i].ss);
-        } else {  // Segment start
-            inSegs.insert(verts[i].ss);
-        }
         lastX = verts[i].ff;
     }
-    cout << ans << "\n";
+    cout << totalLen - minLen << "\n";
 }
 
 int main() {
@@ -97,12 +86,13 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
     cin >> n;
+    int j = 0;
     for (int i = 0; i < n; i++) {
         cin >> segs[i].first >> segs[i].second;
-        verts[i * 2].first = segs[i].first;
-        verts[i * 2 + 1].first = segs[i].second;
-        verts[i * 2].second = verts[i * 2 + 1].second = i;
-        removedLen[i].second = i;
+        verts[j].first = segs[i].first;
+        verts[j + 1].first = segs[i].second;
+        verts[j].second = verts[j + 1].second = i;
+        j += 2;
     }
     sort(verts, verts + 2 * n);
     solve();

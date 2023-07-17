@@ -1,13 +1,14 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: D
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "D"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,8 +18,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
-#include <cmath>
 
 #pragma region States
 #define DEBUG 0
@@ -59,14 +58,14 @@ LANG: C++
 #define ctr(t) const t&
 #define var auto
 #define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define f0r(i, n) for (int i = 0; i < n; i++)
+#define f0ri(i, n) for (int i = 0; i <= n; i++)
+#define f1r(i, n) for (int i = 1; i < n; i++)
+#define f1ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -83,7 +82,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -124,55 +123,36 @@ struct DSU {
     }
 };
 #endif
-// https://cp-algorithms.com/algebra/sieve-of-eratosthenes.html
-void sieve(vector<ll>& primes, vector<char>& is_prime, ll n) {
-    ll nsqrt = sqrt(n);
-    is_prime = vector<char>(nsqrt + 2, true);
-    for (ll i = 2; i <= nsqrt; i++) {
-        if (is_prime[i]) {
-            primes.push_back(i);
-            for (ll j = i * i; j <= nsqrt; j += i)
-                is_prime[j] = false;
-        }
-    }
-}
-
-set<ll> unique_factors(ll n, vector<ll>& primes) {
-    set<ll> factorization;
-    for (ll d : primes) {
-        if (d * d > n)
-            break;
-        while (n % d == 0) {
-            factorization.insert(d);
-            n /= d;
-        }
-    }
-    if (n > 1)
-        factorization.insert(n);
-    return factorization;
-}
-// https://cp-algorithms.com/algebra/factorization.html#precomputed-primes
-vector<ll> factorize(ll n, vector<ll>& primes) {
-    vector<ll> factorization;
-    for (ll d : primes) {
-        if (d * d > n)
-            break;
-        while (n % d == 0) {
-            factorization.push_back(d);
-            n /= d;
-        }
-    }
-    if (n > 1)
-        factorization.push_back(n);
-    return factorization;
-}
 #pragma endregion
 
+multiset<ll> nums;
+int t, n;
+
 void solve() {
-    
+    cin >> n;
+    nums.clear();
+    f0r(i, n) {
+        ll a;
+        cin >> a;
+        nums.insert(a);
+    }
+    bool finished = false;
+    int ans = 0;
+    while (!nums.empty()) {
+        var it = nums.begin();
+        ll num = *it;
+        nums.erase(it);
+        ans ++;
+        while ((it = nums.find(++num)) != nums.end()) {
+            nums.erase(it);
+        }
+    }
+    cout << ans << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(i, t) { solve(); }
     return 0;
 }

@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -168,11 +168,29 @@ vector<ll> factorize(ll n, vector<ll>& primes) {
 }
 #pragma endregion
 
+const int N = 2e5 + 1;
+int dp[N];
+int n, t;
+int a[N];
+int min_before[N];
+
+
 void solve() {
-    
+    min_before[0] = 0;
+    cin >> n;
+    f1ri(i, n) min_before[i] = numeric_limits<int>::max();
+    f1ri(i, n) cin >> a[i];
+    dp[0] = 0;
+    f1ri(i, n) {
+        dp[i] = min(dp[i - 1] + 1, min_before[a[i]]);
+        min_before[a[i]] = min(min_before[a[i]], dp[i - 1]);
+    }
+    cout << n - dp[n] << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(i, t) solve();
     return 0;
 }

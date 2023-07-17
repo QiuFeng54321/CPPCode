@@ -1,13 +1,15 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,8 +19,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
-#include <cmath>
 
 #pragma region States
 #define DEBUG 0
@@ -59,14 +59,14 @@ LANG: C++
 #define ctr(t) const t&
 #define var auto
 #define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define f0r(i, n) for (int i = 0; i < n; i++)
+#define f0ri(i, n) for (int i = 0; i <= n; i++)
+#define f1r(i, n) for (int i = 1; i < n; i++)
+#define f1ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -83,7 +83,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -108,71 +108,89 @@ struct DSU {
     DSU(int N) { e = vector<int>(N, -1); }
 
     // get representive component (uses path compression)
-    int get(int x) { return e[x] < 0 ? x : e[x] = get(e[x]); }
+    int get(int x) { return e.at(x) < 0 ? x : e.at(x) = get(e.at(x)); }
 
     bool same_set(int a, int b) { return get(a) == get(b); }
 
-    int size(int x) { return -e[get(x)]; }
+    int size(int x) { return -e.at(get(x)); }
 
     bool unite(int x, int y) {  // union by size
         x = get(x), y = get(y);
         if (x == y) return false;
-        if (e[x] > e[y]) swap(x, y);
-        e[x] += e[y];
-        e[y] = x;
+        if (e.at(x) > e.at(y)) swap(x, y);
+        e.at(x) += e.at(y);
+        e.at(y) = x;
         return true;
     }
 };
 #endif
-// https://cp-algorithms.com/algebra/sieve-of-eratosthenes.html
 void sieve(vector<ll>& primes, vector<char>& is_prime, ll n) {
-    ll nsqrt = sqrt(n);
+    ll nsqrt = sqrtl(n);
     is_prime = vector<char>(nsqrt + 2, true);
     for (ll i = 2; i <= nsqrt; i++) {
-        if (is_prime[i]) {
+        if (is_prime.at(i)) {
             primes.push_back(i);
-            for (ll j = i * i; j <= nsqrt; j += i)
-                is_prime[j] = false;
+            for (ll j = i * i; j <= nsqrt; j += i) is_prime.at(j) = false;
         }
     }
 }
-
 set<ll> unique_factors(ll n, vector<ll>& primes) {
     set<ll> factorization;
     for (ll d : primes) {
-        if (d * d > n)
-            break;
+        if (d * d > n) break;
         while (n % d == 0) {
             factorization.insert(d);
             n /= d;
         }
     }
-    if (n > 1)
-        factorization.insert(n);
+    if (n > 1) factorization.insert(n);
     return factorization;
 }
-// https://cp-algorithms.com/algebra/factorization.html#precomputed-primes
 vector<ll> factorize(ll n, vector<ll>& primes) {
     vector<ll> factorization;
     for (ll d : primes) {
-        if (d * d > n)
-            break;
+        if (d * d > n) break;
         while (n % d == 0) {
             factorization.push_back(d);
             n /= d;
         }
     }
-    if (n > 1)
-        factorization.push_back(n);
+    if (n > 1) factorization.push_back(n);
     return factorization;
 }
 #pragma endregion
 
+int n, t;
+vector<ll> primes;
+vector<char> is_prime;
+map<ll, int> primeFreq;
+
 void solve() {
-    
+    primeFreq.clear();
+    cin >> n;
+    f0r(i, n) {
+        ll x;
+        cin >> x;
+        var factors = unique_factors(x, primes);
+        for (car factor : factors) {
+            primeFreq[factor]++;
+        }
+    }
+    bool success = false;
+    for (car[x, f] : primeFreq) {
+        dbgl(x << ": " << f) if (f > 1) {
+            cout << "YES" << endl;
+            success = true;
+            break;
+        }
+    }
+    if (!success) cout << "NO" << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    sieve(primes, is_prime, 1e9);
+    cin >> t;
+    f0r(_, t) { solve(); }
     return 0;
 }

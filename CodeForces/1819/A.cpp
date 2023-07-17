@@ -1,13 +1,15 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: A
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "A"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,8 +19,6 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
-#include <cmath>
 
 #pragma region States
 #define DEBUG 0
@@ -59,14 +59,14 @@ LANG: C++
 #define ctr(t) const t&
 #define var auto
 #define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define f0r(i, n) for (int i = 0; i < n; i++)
+#define f0ri(i, n) for (int i = 0; i <= n; i++)
+#define f1r(i, n) for (int i = 1; i < n; i++)
+#define f1ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -83,7 +83,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -131,8 +131,7 @@ void sieve(vector<ll>& primes, vector<char>& is_prime, ll n) {
     for (ll i = 2; i <= nsqrt; i++) {
         if (is_prime[i]) {
             primes.push_back(i);
-            for (ll j = i * i; j <= nsqrt; j += i)
-                is_prime[j] = false;
+            for (ll j = i * i; j <= nsqrt; j += i) is_prime[j] = false;
         }
     }
 }
@@ -140,39 +139,92 @@ void sieve(vector<ll>& primes, vector<char>& is_prime, ll n) {
 set<ll> unique_factors(ll n, vector<ll>& primes) {
     set<ll> factorization;
     for (ll d : primes) {
-        if (d * d > n)
-            break;
+        if (d * d > n) break;
         while (n % d == 0) {
             factorization.insert(d);
             n /= d;
         }
     }
-    if (n > 1)
-        factorization.insert(n);
+    if (n > 1) factorization.insert(n);
     return factorization;
 }
 // https://cp-algorithms.com/algebra/factorization.html#precomputed-primes
 vector<ll> factorize(ll n, vector<ll>& primes) {
     vector<ll> factorization;
     for (ll d : primes) {
-        if (d * d > n)
-            break;
+        if (d * d > n) break;
         while (n % d == 0) {
             factorization.push_back(d);
             n /= d;
         }
     }
-    if (n > 1)
-        factorization.push_back(n);
+    if (n > 1) factorization.push_back(n);
     return factorization;
 }
 #pragma endregion
 
+const int N = 200005;
+ll a[N];
+int l[N], r[N];
+int cnt[N];
+set<int> nums;
+
 void solve() {
-    
+    int n;
+    int mex = 0;
+    ll maxNum = 0;
+    cin >> n;
+    nums.clear();
+    bool hasMultiple = false;  // has multiple num before mex
+    f0r(i, n) {
+        cin >> a[i];
+        maxNum = max(maxNum, a[i]);
+        if (a[i] >= N) continue;
+        nums.insert(a[i]);
+        l[a[i]] = min(l[a[i]], i);
+        r[a[i]] = max(r[a[i]], i);
+        cnt[a[i]]++;
+        if (a[i] < mex) {
+            hasMultiple |= cnt[a[i]] > 1;
+        }
+        while (cnt[mex]) {
+            hasMultiple |= cnt[mex] > 1;
+            mex++;
+        }
+    }
+    dbgs cout << "Mex = " << mex << "\n";
+    if (cnt[mex + 1] > 1) {
+        f0r(i, mex) {
+            if (l[i] >= l[mex + 1] && r[i] <= r[mex + 1]) {
+                dbgs cout << i << " in " << mex + 1;
+                cout << "NO\n";
+                goto finishUp;
+            }
+        }
+    }
+    if (maxNum < mex) {
+        if (!hasMultiple) {
+            dbgs cout << "Max " << maxNum << ", no multiple ";
+            cout << "NO\n";
+            goto finishUp;
+        }
+    }
+    if (n == 1 && a[0] == 0) {
+        cout << "NO\n";
+        goto finishUp;
+    }
+    cout << "YES\n";
+    finishUp: for (auto& num : nums) {
+        l[num] = r[num] = -1;
+        cnt[num] = 0;
+        dbgs cout << "Reset " << num << "\n";
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    int t;
+    cin >> t;
+    f0r(i, t) { solve(); }
     return 0;
 }

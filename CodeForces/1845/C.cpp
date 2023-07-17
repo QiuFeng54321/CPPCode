@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -168,11 +168,41 @@ vector<ll> factorize(ll n, vector<ll>& primes) {
 }
 #pragma endregion
 
+int t, m, n;
+string s, l, r;
+
+inline int get(int l, int r) {
+    return ((1 << (r + 1)) - 1) & ~((1 << l) - 1);
+}
+
+inline int rm(int v, int i) {
+    return v & ~(1 << i);
+}
+
 void solve() {
-    
+    cin >> s >> m >> l >> r;
+    n = s.size();
+    int j = 0;
+    int possibility = get(l[0] - '0', r[0] - '0');
+    f0r(i, n) {
+        const auto& c = s[i];
+        if ((possibility = rm(possibility, c - '0')) == 0) {
+            j++;
+            if (j >= m) {
+                cout << "NO" << endl;
+                return;
+            }
+            possibility = get(l[j] - '0', r[j] - '0');
+        }
+    }
+    cout << "YES" << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(i, t) {
+        solve();
+    }
     return 0;
 }

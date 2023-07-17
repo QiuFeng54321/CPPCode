@@ -1,17 +1,8 @@
-9 7 16
-+ halloween
-+ challenge
-+ almanac
-+ choice
-+ campus
-+ deadpan
-+ gender
-+ announced
-+ airline
-+ irishman
-+ inane
-+ mound
-+ lope
-+ cane
-+ area
-+ lode
+5 3 7
++ echo
++ baker
++ apt
++ toe
++ ore
++ eat
++ cap

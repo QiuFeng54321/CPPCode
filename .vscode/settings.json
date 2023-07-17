@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.smd": "json",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -79,7 +80,9 @@
         "ios": "cpp",
         "mutex": "cpp",
         "ratio": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "unordered_set": "cpp"
     },
-    "cmake.sourceDirectory": "${workspaceFolder}/misc"
+    "cmake.sourceDirectory": "${workspaceFolder}/misc",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

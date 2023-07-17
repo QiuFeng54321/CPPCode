@@ -1,13 +1,15 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: D
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "D"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -17,12 +19,10 @@ LANG: C++
 #include <stack>
 #include <string>
 #include <vector>
-#include <iomanip>
-#include <cmath>
 
 #pragma region States
-#define DEBUG 0
-#define USE_FILE 0
+#define DEBUG 1
+#define USE_FILE 1
 #define MOD 1000000007
 #define USE_DSU 0
 #pragma endregion
@@ -59,14 +59,14 @@ LANG: C++
 #define ctr(t) const t&
 #define var auto
 #define all(x) x.begin(), x.end()
-#define f0r(i, n) for(int i = 0; i < n; i++)
-#define f0ri(i, n) for(int i = 0; i <= n; i++)
-#define f1r(i, n) for(int i = 1; i < n; i++)
-#define f1ri(i, n) for(int i = 1; i <= n; i++)
+#define f0r(i, n) for (int i = 0; i < n; i++)
+#define f0ri(i, n) for (int i = 0; i <= n; i++)
+#define f1r(i, n) for (int i = 1; i < n; i++)
+#define f1ri(i, n) for (int i = 1; i <= n; i++)
 using namespace std;
 using str = string;
 using ll = long long;
-template<typename T>
+template <typename T>
 T last_true(T lo, T hi, function<bool(T)> f) {
     // if none of the values in the range work, return lo - 1
     lo--;
@@ -83,7 +83,7 @@ T last_true(T lo, T hi, function<bool(T)> f) {
     }
     return lo;
 }
-template<typename T>
+template <typename T>
 T first_true(T lo, T hi, function<bool(T)> f) {
     hi++;
     while (lo < hi) {
@@ -131,8 +131,7 @@ void sieve(vector<ll>& primes, vector<char>& is_prime, ll n) {
     for (ll i = 2; i <= nsqrt; i++) {
         if (is_prime[i]) {
             primes.push_back(i);
-            for (ll j = i * i; j <= nsqrt; j += i)
-                is_prime[j] = false;
+            for (ll j = i * i; j <= nsqrt; j += i) is_prime[j] = false;
         }
     }
 }
@@ -140,39 +139,91 @@ void sieve(vector<ll>& primes, vector<char>& is_prime, ll n) {
 set<ll> unique_factors(ll n, vector<ll>& primes) {
     set<ll> factorization;
     for (ll d : primes) {
-        if (d * d > n)
-            break;
+        if (d * d > n) break;
         while (n % d == 0) {
             factorization.insert(d);
             n /= d;
         }
     }
-    if (n > 1)
-        factorization.insert(n);
+    if (n > 1) factorization.insert(n);
     return factorization;
 }
 // https://cp-algorithms.com/algebra/factorization.html#precomputed-primes
 vector<ll> factorize(ll n, vector<ll>& primes) {
     vector<ll> factorization;
     for (ll d : primes) {
-        if (d * d > n)
-            break;
+        if (d * d > n) break;
         while (n % d == 0) {
             factorization.push_back(d);
             n /= d;
         }
     }
-    if (n > 1)
-        factorization.push_back(n);
+    if (n > 1) factorization.push_back(n);
     return factorization;
 }
 #pragma endregion
 
+const int N = 2e5;
+
 void solve() {
-    
+    int n, cnt = 0;
+    set<int> s{};
+    cin >> n;
+    int a[n];
+    f0r(i, n) {
+        int v;
+        cin >> v;
+        if (s.find(v) == s.end()) {
+            s.insert(v);
+            a[cnt] = v;
+            cnt++;
+        }
+    }
+    sort(a, a + cnt);
+
+    auto seg = [&](int l, int r) {
+        if (l > r) return pair{0, 0};
+        if (l == r) return pair{0, a[l]};
+        auto diff = a[r] - a[l];
+        dbgs {
+            cout << "Diff from " << l << " to " << r << ": " << diff << endl;
+            for (int i = l; i <= r; i++) {
+                cout << a[i] << " ";
+            }
+            cout << endl;
+        }
+        return pair{(diff >> 1) + (diff & 1), (a[r] + a[l]) / 2};
+    };
+    auto max_time = [&](int l, int r) {
+        auto l_seg = seg(0, l), m_seg = seg(l + 1, r - 1),
+             r_seg = seg(r, cnt - 1);
+        return max(l_seg.first, max(m_seg.first, r_seg.first));
+    };
+
+    int l = 0, r = cnt - 1;
+    auto ans = max_time(l, r);
+    while (r - l > 1) {
+        auto cur_max_l = max_time(l + 1, r);
+        auto cur_max_r = max_time(l, r - 1);
+        if (cur_max_l <= ans || cur_max_r <= ans) {
+            if (ans - cur_max_l <= ans - cur_max_r) {
+                l++;
+                ans = cur_max_l;
+            } else {
+                r--;
+                ans = cur_max_r;
+            }
+        } else
+            break;
+    }
+    dbgs cout << "ans: " << a[l] << " " << a[r] << endl;
+    cout << ans << endl;
 }
 
 int main() {
     MAIN_FILE_HEADER
+    int t;
+    cin >> t;
+    f0r(i, t) solve();
     return 0;
 }

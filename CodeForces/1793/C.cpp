@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: C
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "C"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -21,7 +21,7 @@ LANG: C++
 #include <cmath>
 
 #pragma region States
-#define DEBUG 0
+#define DEBUG 1
 #define USE_FILE 0
 #define MOD 1000000007
 #define USE_DSU 0
@@ -168,11 +168,56 @@ vector<ll> factorize(ll n, vector<ll>& primes) {
 }
 #pragma endregion
 
+int t, n;
+const int N = 200005;
+int a[N];
+int minLR[N], minRL[N], maxLR[N], maxRL[N];
+
+
 void solve() {
-    
+    cin >> n;
+    f0r(i, n) {
+        cin >> a[i];
+        if (i) {
+            minLR[i] = min(minLR[i - 1], a[i]);
+            maxLR[i] = max(maxLR[i - 1], a[i]);
+        } else {
+            minLR[i] = maxLR[i] = a[i];
+        }
+    }
+    for(int i = n - 1; i >= 0; i--) {
+        if (i != n - 1) {
+            minRL[i] = min(minRL[i + 1], a[i]);
+            maxRL[i] = max(maxRL[i + 1], a[i]);
+        } else {
+            minRL[i] = maxRL[i] = a[i];
+        }
+    }
+    f0r(i, n) {
+        dbgs cout << minLR[i] << " " << minRL[i] << " " << maxLR[i] << " " << maxRL[i] << endl;
+    }
+    int i = 0, j = n - 1;
+    while (i < j) {
+        int range_min = max(minLR[j], minRL[i]);
+        int range_max = min(maxLR[j], maxRL[i]);
+        cout << "[" << range_min << ".." << range_max << "]\n";
+        if (a[i] == range_min || a[i] == range_max) i++;
+        else if (a[j] == range_max || a[j] == range_min) j--;
+        else break;
+        cout << i << " to " << j << endl;
+    }
+    if (i >= j) {
+        cout << -1 << endl;
+    } else {
+        cout << i + 1 << ' ' << j + 1 << endl;
+    }
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> t;
+    f0r(i, t) {
+        solve();
+    }
     return 0;
 }

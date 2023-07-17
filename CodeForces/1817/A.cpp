@@ -1,9 +1,9 @@
 /*
 ID: william234
-TASK: ${ProgramName}
+TASK: A
 LANG: C++
 */
-#define PROGRAM_NAME "${ProgramName}"
+#define PROGRAM_NAME "A"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
@@ -21,8 +21,8 @@ LANG: C++
 #include <cmath>
 
 #pragma region States
-#define DEBUG 0
-#define USE_FILE 0
+#define DEBUG 1
+#define USE_FILE 1
 #define MOD 1000000007
 #define USE_DSU 0
 #pragma endregion
@@ -168,11 +168,40 @@ vector<ll> factorize(ll n, vector<ll>& primes) {
 }
 #pragma endregion
 
+const int N = 200002;
+int n ,q;
+ll a[N];
+int psum[N];
+
+bool f(int i) {
+    return a[i - 1] >= a[i] && a[i] >= a[i + 1];
+}
+
 void solve() {
-    
+    int l, r;
+    cin >> l >> r;
+    l --; r --;
+    int ans = r - l + 1;
+    ans -= psum[r - 1] - psum[l];
+    // ans += f(l);
+    // ans += f(r);
+    cout << ans << '\n';
 }
 
 int main() {
     MAIN_FILE_HEADER
+    cin >> n >> q;
+    f0r(i, n) {
+        cin >> a[i];
+        if (i > 1) {
+            psum[i - 1] = psum[i - 2] + f(i - 1);
+            dbgs cout << psum[i - 1] << ' ';
+        }
+    }
+    dbgs cout << '\n';
+    f0r(i, q) {
+        solve();
+    }
+
     return 0;
 }

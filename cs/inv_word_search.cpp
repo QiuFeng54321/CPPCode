@@ -136,6 +136,9 @@ struct Node {
     Node* children[26];
     bool hasWord = false;
     bool isNo = false;
+    int layer = 0;
+    bool noPathOnly = true;
+    int maxStepsLeft = 0;
 };
 
 Node* rootNode = new Node;
@@ -147,7 +150,10 @@ void add_word(str s, bool isNo) {
         int i = to_repr(c);
         if (!curNode->children[i]) {
             curNode->children[i] = new Node;
+            curNode->children[i]->layer = curNode->layer + 1;
         }
+        if (!isNo) curNode->noPathOnly = false;
+        curNode->maxStepsLeft = max<int>(curNode->maxStepsLeft, s.size() - curNode->layer);
         curNode = curNode->children[i];
     }
     curNode->hasWord = true;
@@ -189,27 +195,39 @@ struct Unit {
         memcpy(newUnit.genes + crosspoint, other.genes + crosspoint,
                geneCount - crosspoint);
         f0r(i, geneCount) {
-            if (randReal(gen) < 0.06) {
+            if (randReal(gen) < 0.1) {
                 newUnit.genes[i] = randChar(gen);
             }
         }
         return newUnit;
     }
+    int remainSteps(int x, int y, int di) {
+        if (x < 0 || x >= w || y < 0 || y >= h) return 0;
+        int ny = y + dy[di];
+        int nx = x + dx[di];
+        return remainSteps(nx, ny, di) + 1;
+    }
     int recur(int x, int y, int di, Node* cur) {
         if (!cur) return 0;
         int res = 0;
         if (cur->hasWord) {
-            if (!visited[cur]) {
-                res += cur->isNo ? -3 : 1;
-                visited[cur] = true;
-            } else {
-                res --;
+            if (cur->isNo) {
+                res -= 10;
+            } else if (!visited[cur]) {
+                res += 10;
             }
+            visited[cur] = true;
         }
         int nx = x + dx[di];
         int ny = y + dy[di];
         if (nx < 0 || nx >= w || ny < 0 || ny >= h) return res;
-        return res + recur(nx, ny, di, cur->children[get(nx, ny)]);
+        var childRes = recur(nx, ny, di, cur->children[get(nx, ny)]);
+        if (childRes == 0) {
+
+            // res += (cur->noPathOnly ? -1 : 1) * clamp(remainSteps(x, y, di) - cur->maxStepsLeft - 2, 0, 2);
+            res += (cur->noPathOnly ? -1 : 1) * clamp(cur->layer, 0, 1);
+        }
+        return res + childRes;
     }
     int fitness() {
         visited.clear();
@@ -239,11 +257,13 @@ struct Unit {
 bool cmpAge(const Unit& a, const Unit& b) { return a.age > b.age; }
 
 const int PopulationSize = 2000;
-const int RandSize = 10;
+const int RandSize = 50;
 // const int RandSize = 0;
-const int LeaveElite = 1;
+const int LeaveElite = 5;
 const bool SelectRandom = 0;
-const int OffspringSize = SelectRandom ? PopulationSize - LeaveElite : ((PopulationSize - LeaveElite) / 2 - 1);
+const int OffspringSize = SelectRandom
+                              ? PopulationSize - LeaveElite - RandSize
+                              : (PopulationSize - RandSize) / 3;
 class GA {
    public:
     Unit population[PopulationSize];
@@ -360,13 +380,13 @@ void solve() {
         }
         ga.round();
         cout << "Round " << round++ << endl;
-        if (ga.population[0].finalized_fitness >= wordCount) {
-            cout << "Solution found: \n";
-            cout << ga.population[0] << endl;
-            break;
-        }
+        // if (ga.population[0].finalized_fitness >= wordCount) {
+        //     cout << "Solution found: \n";
+        //     cout << ga.population[0] << endl;
+        //     break;
+        // }
         cout << "Top 3 units:\n";
-        f0r(i, 3) {
+        f0r(i, 1) {
             cout << i << ": \n";
             cout << ga.population[i] << endl;
         }

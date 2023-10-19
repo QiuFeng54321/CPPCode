@@ -84,5 +84,8 @@
         "unordered_set": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/misc",
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cSpell.enableFiletypes": [
+        "!cpp"
+    ]
 }

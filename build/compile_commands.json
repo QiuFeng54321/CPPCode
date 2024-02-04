@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/Users/mac/Documents/VSCProjects/CPPCode/build",
-  "command": "/usr/local/opt/llvm/bin/clang++ -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -o CMakeFiles/Things.dir/main.cpp.o -c /Users/mac/Documents/VSCProjects/CPPCode/main.cpp",
-  "file": "/Users/mac/Documents/VSCProjects/CPPCode/main.cpp"
-}
-]
